@@ -1,0 +1,44 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "scalehypex",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["*/20 * * * *"]
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "JOBS",
+        "queue": "scalehypex-jobs"
+        // max_batch_size is set on the queue itself (create with max batch 10),
+        // not in the producer config (current wrangler schema).
+      }
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "VIDEOS",
+      "bucket_name": "scalehypex-videos"
+    }
+  ],
+  "containers": [
+    // Build + push first (see docker/yt-dlp/Dockerfile), then set the real
+    // registry path for `image`. The worker's `env.YTDLP` Container handle is
+    // attached to this app at deploy time (verify wiring in this wrangler
+    // version — containers attach via DO exports).
+    {
+      "name": "YTDLP",
+      "image": "<registry>/scalehypex-ytdlp:latest"
+    }
+  ],
+  "vars": {
+    "SUPABASE_URL": "<fill-me>",
+    "R2_PUBLIC_BASE": "<fill-me>"
+  }
+  // Secrets — set with `wrangler secret put` (NEVER commit values):
+  //   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+  //   wrangler secret put TIKTOK_CLIENT_KEY
+  //   wrangler secret put TIKTOK_CLIENT_SECRET
+}
