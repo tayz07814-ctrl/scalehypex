@@ -95,7 +95,7 @@ export interface TikTokTokenResponse {
 }
 
 async function requestToken(
-  params: { code?: string; refreshToken?: string },
+  params: { code?: string; refreshToken?: string; redirectUri?: string },
   credentials?: TikTokCredentials,
 ): Promise<TikTokTokenResponse> {
   const { clientKey, clientSecret } = resolveCredentials(credentials)
@@ -106,6 +106,9 @@ async function requestToken(
   if (params.code) {
     form.set("code", params.code)
     form.set("grant_type", "authorization_code")
+    // TikTok requires redirect_uri in the token exchange, matching the
+    // authorize request. Without it, TikTok returns invalid_request.
+    if (params.redirectUri) form.set("redirect_uri", params.redirectUri)
   } else if (params.refreshToken) {
     form.set("refresh_token", params.refreshToken)
     form.set("grant_type", "refresh_token")
@@ -125,8 +128,9 @@ async function requestToken(
 export function exchangeCodeForTokens(
   code: string,
   credentials?: TikTokCredentials,
+  redirectUri?: string,
 ): Promise<TikTokTokenResponse> {
-  return requestToken({ code }, credentials)
+  return requestToken({ code, redirectUri }, credentials)
 }
 
 /** Refresh an access token using a refresh token. */

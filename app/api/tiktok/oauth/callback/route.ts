@@ -39,9 +39,10 @@ export async function GET(request: Request) {
   }
   const userId = data.user.id
 
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI
   let tokens
   try {
-    tokens = await exchangeCodeForTokens(code)
+    tokens = await exchangeCodeForTokens(code, undefined, redirectUri)
   } catch (err) {
     const message =
       err instanceof TikTokApiError
