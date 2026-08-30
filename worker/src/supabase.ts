@@ -15,6 +15,8 @@ export interface WorkerBindings {
   JOBS: Queue
   /** R2 bucket: scalehypex-videos */
   VIDEOS: R2Bucket
+  /** Shared secret for the dashboard manual "Run bot now" trigger. */
+  RUN_SECRET: string
 }
 
 /**

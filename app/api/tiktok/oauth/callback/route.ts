@@ -51,13 +51,15 @@ export async function GET(request: Request) {
     return Response.json({ error: message }, { status: 502 })
   }
 
-  // Best-effort: store a display name for the UI; never block connect on this.
+  // Best-effort: store display name + avatar for the UI; never block connect.
   let username: string | null = null
+  let avatarUrl: string | null = null
   try {
     const ttUser = await getUserInfo(tokens.access_token)
     username = ttUser.display_name ?? null
+    avatarUrl = ttUser.avatar_url ?? null
   } catch {
-    // keep username null and continue
+    // keep username/avatar null and continue
   }
 
   const { error: dbError } = await supabase.from("tiktok_accounts").upsert(
@@ -65,6 +67,7 @@ export async function GET(request: Request) {
       user_id: userId,
       tt_open_id: tokens.open_id,
       username,
+      avatar_url: avatarUrl,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),

@@ -5,6 +5,7 @@ import {
   listVideos as ttListVideos,
 } from "../../lib/tiktok/api"
 import { resolveWatermarkFreeUrl } from "../../lib/tiktok/cdn"
+import { logBot } from "./botlog"
 
 /** Rows stuck in `downloading` longer than this are reset to `new` by cron. */
 const STUCK_DOWNLOADING_MS = 30 * 60 * 1000
@@ -70,8 +71,13 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
   for (const account of accounts ?? []) {
     let added = 0
     try {
+      await logBot(supabase, account.user_id, "info", "Checking TikTok for new videos", {
+        username: account.username ?? null,
+      })
       // rows actually inserted this pass (uuid row id + TikTok video id)
       const newRows: { rowId: string; ttVideoId: string }[] = []
+      // Holds the (possibly refreshed) access token for CDN resolution.
+      let activeToken = account.access_token
 
       const deps: PollDeps = {
         refreshAccessToken: async (refreshToken) => {
@@ -83,24 +89,13 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
           }
         },
         listVideos: async (accessToken) => {
+          activeToken = accessToken
           const list = await ttListVideos(accessToken)
-          const out = []
-          for (const video of list.videos) {
-            let cdnUrl: string | null = null
-            try {
-              const resolved = await resolveWatermarkFreeUrl(accessToken, video.id)
-              cdnUrl = resolved?.url ?? null
-            } catch {
-              cdnUrl = null
-            }
-            out.push({
-              id: video.id,
-              title: video.title ?? video.video_description ?? null,
-              duration: video.duration,
-              cdnUrl,
-            })
-          }
-          return out
+          return list.videos.map((video) => ({
+            id: video.id,
+            title: video.title ?? video.video_description ?? null,
+            duration: video.duration,
+          }))
         },
         updateAccountTokens: async (accountId, accessToken, refreshToken, expiresAt) => {
           const { error } = await supabase
@@ -122,6 +117,17 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
         },
         insertVideos: async (rows) => {
           for (const row of rows) {
+            // Resolve the watermark-free CDN URL only for brand-new rows
+            // (v1 API first, page-scrape fallback).
+            let cdnUrl: string | null = row.cdnUrl ?? null
+            if (!cdnUrl) {
+              try {
+                const resolved = await resolveWatermarkFreeUrl(activeToken, row.videoId)
+                cdnUrl = resolved?.url ?? null
+              } catch {
+                cdnUrl = null
+              }
+            }
             // one-by-one; a unique (account, video_id) violation (23505)
             // means this video was already polled — skip it
             const { data, error } = await supabase
@@ -131,7 +137,7 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
                 video_id: row.videoId,
                 description: row.description,
                 download_url: row.downloadUrl,
-                cdn_url: row.cdnUrl,
+                cdn_url: cdnUrl,
                 duration_ms: row.durationMs,
                 status: "new",
               })
@@ -149,6 +155,13 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
       }
 
       added = await pollAccountForNewVideos(deps, account)
+      await logBot(
+        supabase,
+        account.user_id,
+        added > 0 ? "success" : "info",
+        added > 0 ? `Found ${added} new video(s)` : "No new videos",
+        { added },
+      )
 
       // after insertion: if the owner auto-publishes, start downloading now
       if (newRows.length > 0) {

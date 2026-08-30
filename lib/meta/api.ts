@@ -157,6 +157,23 @@ export async function getPages(
 export interface MetaInstagramAccount {
   id: string
   username: string
+  profile_picture_url?: string
+}
+
+/** GET /{igUserId}?fields=profile_picture_url - IG profile picture via page token. */
+export async function getIgProfilePicture(
+  igUserId: string,
+  pageToken: string,
+  credentials?: MetaCredentials,
+): Promise<string | null> {
+  const { apiVersion } = resolveCredentials(credentials)
+  const res = await fetch(
+    `${GRAPH_BASE_URL}/${apiVersion}/${igUserId}?fields=profile_picture_url`,
+    { headers: { Authorization: `Bearer ${pageToken}` } },
+  )
+  if (res.status === 400 || res.status === 404) return null
+  const body = await parseMetaResponse<{ profile_picture_url?: string }>(res)
+  return body.profile_picture_url ?? null
 }
 
 interface MetaInstagramAccountResponse {
@@ -176,7 +193,7 @@ export async function getInstagramAccount(
   const { apiVersion } = resolveCredentials(credentials)
 
   const res = await fetch(
-    `${GRAPH_BASE_URL}/${apiVersion}/${pageId}/instagram_account?fields=id,username`,
+    `${GRAPH_BASE_URL}/${apiVersion}/${pageId}/instagram_account?fields=id,username,profile_picture_url`,
     { headers: { Authorization: `Bearer ${pageToken}` } },
   )
   if (res.status === 400 || res.status === 404) {

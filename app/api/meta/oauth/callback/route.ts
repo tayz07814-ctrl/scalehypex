@@ -97,7 +97,11 @@ export async function GET(request: Request) {
       if (ig) {
         await supabase
           .from("meta_accounts")
-          .update({ ig_user_id: ig.id, ig_username: ig.username })
+          .update({
+          ig_user_id: ig.id,
+          ig_username: ig.username,
+          ig_picture_url: ig.profile_picture_url ?? null,
+        })
           .eq("user_id", userId)
           .eq("fb_page_id", page.id)
       }
