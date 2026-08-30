@@ -60,6 +60,23 @@ async function pollStatus(
   return { status, success: false }
 }
 
+async function alreadyPublished(
+  supabase: SupabaseClient,
+  video: TikTokVideoRow,
+  metaAccountId: string,
+  platform: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("published_posts")
+    .select("id")
+    .eq("tiktok_video_id", video.id)
+    .eq("meta_account_id", metaAccountId)
+    .eq("platform", platform)
+    .eq("status", "published")
+    .maybeSingle()
+  return data != null
+}
+
 async function insertPublishedPost(
   supabase: SupabaseClient,
   userId: string,
@@ -100,6 +117,10 @@ async function publishToInstagram(
   pageToken: string,
   metaAccountId: string,
 ): Promise<boolean> {
+  if (await alreadyPublished(supabase, video, metaAccountId, "instagram")) {
+    console.log(`publish: ${video.id} already published to instagram - skipping duplicate`)
+    return true
+  }
   const postId = await insertPublishedPost(supabase, userId, video, metaAccountId, "instagram")
   try {
     const creation = await createIgReel(igUserId, pageToken, url, caption)
@@ -137,6 +158,10 @@ async function publishToFacebook(
   pageToken: string,
   metaAccountId: string,
 ): Promise<boolean> {
+  if (await alreadyPublished(supabase, video, metaAccountId, "facebook")) {
+    console.log(`publish: ${video.id} already published to facebook - skipping duplicate`)
+    return true
+  }
   const postId = await insertPublishedPost(supabase, userId, video, metaAccountId, "facebook")
   try {
     const upload = await createFbPageVideoUpload(fbPageId, pageToken, url, caption)

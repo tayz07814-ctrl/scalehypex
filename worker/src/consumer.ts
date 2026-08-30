@@ -113,6 +113,14 @@ async function processDownloadJob(
     return
   }
   const video = row as TikTokVideoRow
+
+  // Idempotency guard: a queue message can be redelivered (at-least-once).
+  // If this video already reached a terminal/downloaded state, do NOT
+  // download it again - never duplicate work.
+  if (video.status === "ready" || video.status === "published" || video.status === "failed") {
+    console.log(`consumer: video ${videoId} already ${video.status} - skipping duplicate`)
+    return
+  }
   const { data: account } = await supabase
     .from("tiktok_accounts")
     .select("user_id")
