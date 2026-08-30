@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
-import type { YtDlpContainer } from "./ytdlp-container"
 
 /**
  * Worker bindings (wrangler.jsonc vars + secrets + resource bindings).
@@ -18,8 +17,8 @@ export interface WorkerBindings {
   VIDEOS: R2Bucket
   /** Shared secret for the dashboard manual "Run bot now" trigger. */
   RUN_SECRET: string
-  /** DO namespace hosting the yt-dlp container (download jobs). */
-  YTDLP: DurableObjectNamespace<YtDlpContainer>
+  /** tikwm.com API key (free/paid tier, unlocks the download rate limit). */
+  TIKWM_API_KEY: string
 }
 
 /**

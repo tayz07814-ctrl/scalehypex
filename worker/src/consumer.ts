@@ -2,7 +2,6 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import { createSupabaseClient, type WorkerBindings } from "./supabase"
 import { publicR2Url, videoR2Key } from "../../lib/pipeline/r2"
 import type { TikTokVideoRow } from "../../lib/pipeline/types"
-import { getContainer } from "@cloudflare/containers"
 import { publishVideo } from "./publish"
 import { logBot } from "./botlog"
 
@@ -15,7 +14,61 @@ export interface DownloadVideoJob {
 /** How long a published video stays in R2 before deletion (1 hour). */
 export const R2_RETENTION_MS = 60 * 60 * 1000
 
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
+
+
+/**
+ * Paid TikTok downloader (tikwmapi.com): resolves a watermark-free mp4 URL for
+ * a TikTok page URL and returns the raw bytes. Auth via x-tikwmapi-key header
+ * (the free www.tikwm.com endpoint is per-IP rate-limited and 403s from
+ * Cloudflare egress; the paid api.tikwmapi.com endpoint is key-authenticated).
+ */
+async function downloadViaTikwm(pageUrl: string, apiKey: string | undefined): Promise<ArrayBuffer> {
+  let lastErr: unknown
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      if (!apiKey) throw new Error("tikwm: missing TIKWM_API_KEY")
+      const api = `https://api.tikwmapi.com/?url=${encodeURIComponent(pageUrl)}&hd=1`
+      const res = await fetch(api, {
+        headers: {
+          "x-tikwmapi-key": apiKey,
+          "User-Agent": UA,
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(30_000),
+      })
+      const body = (await res.json()) as {
+        code?: number
+        msg?: string
+        data?: { play?: string; hdplay?: string }
+      }
+      if (body.code !== 0 || !body.data) {
+        const raw = JSON.stringify(body).slice(0, 200)
+        throw new Error(`tikwm: ${body.msg ?? "no data"} | raw=${raw}`)
+      }
+      const mp4Url = body.data.hdplay ?? body.data.play
+      if (!mp4Url) throw new Error("tikwm: no mp4 url")
+      const vid = await fetch(mp4Url, {
+        headers: {
+          "User-Agent": UA,
+          Referer: "https://api.tikwmapi.com/",
+          Accept: "video/mp4,*/*;q=0.8",
+        },
+        signal: AbortSignal.timeout(180_000),
+      })
+      if (!vid.ok) throw new Error(`mp4 HTTP ${vid.status}`)
+      const buf = await vid.arrayBuffer()
+      if (buf.byteLength === 0) throw new Error("mp4 empty body")
+      return buf
+    } catch (err) {
+      lastErr = err
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 1500 * attempt))
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("tikwm download failed")
+}
 
 /**
  * Queue consumer (scalehypex-jobs): fetch the video from TikTok CDN (no
@@ -71,26 +124,20 @@ async function processDownloadJob(
   }
   const userId = (account as { user_id: string }).user_id
 
-  // 2. source = the TikTok video page URL; yt-dlp resolves the no-watermark
-  //    stream itself (direct CDN fetch is blocked by Akamai in 2026).
+  // 2. source = the TikTok video page URL; resolved via a third-party
+  //    downloader API (tikwm) — direct CDN fetch hits Akamai 403 and CF
+  //    Containers require the paid plan.
   if (!video.download_url) {
     await failRow(supabase, videoId, "video row has no page URL")
     return
   }
 
-  await logBot(supabase, userId, "info", "Downloading via yt-dlp container", {
+  await logBot(supabase, userId, "info", "Resolving watermark-free mp4 via tikwm API", {
     ttVideoId: video.video_id,
   })
 
-  // 3. run yt-dlp in the container; raw mp4 arrives on stdout
-  const container = getContainer(env.YTDLP, `dl-${videoId.slice(0, 8)}`)
-  const out = await container.downloadVideo(video.download_url)
-  if (out.exitCode !== 0) {
-    const detail = new TextDecoder().decode(out.stderr).slice(-500)
-    await failRow(supabase, videoId, detail || `yt-dlp exit code ${out.exitCode}`)
-    return
-  }
-  const bytes = out.stdout
+  // 3. download the mp4 bytes (retries inside)
+  const bytes = await downloadViaTikwm(video.download_url, env.TIKWM_API_KEY)
 
   // 4. upload to R2
   const key = videoR2Key(userId, video.video_id)

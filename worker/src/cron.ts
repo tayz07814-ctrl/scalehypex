@@ -76,8 +76,6 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
       })
       // rows actually inserted this pass (uuid row id + TikTok video id)
       const newRows: { rowId: string; ttVideoId: string }[] = []
-      // Holds the (possibly refreshed) access token for CDN resolution.
-      let activeToken = account.access_token
 
       const deps: PollDeps = {
         refreshAccessToken: async (refreshToken) => {
@@ -89,7 +87,6 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
           }
         },
         listVideos: async (accessToken) => {
-          activeToken = accessToken
           const list = await ttListVideos(accessToken)
           return list.videos.map((video) => ({
             id: video.id,

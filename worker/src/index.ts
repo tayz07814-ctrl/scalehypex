@@ -4,6 +4,9 @@ import { consume, type DownloadVideoJob } from "./consumer"
 import { runCommentBot } from "./comments"
 import { runMetricsCollector } from "./metrics"
 import { serveR2Object } from "./serve"
+import { YtDlpContainer } from "./ytdlp-container"
+
+export { YtDlpContainer }
 
 export default {
   async fetch(
