@@ -440,3 +440,27 @@ export async function postIgComment(
   })
   return parseMetaResponse<MetaCommentReplyResponse>(res)
 }
+
+/** POST /{igUserId}/messages — send an Instagram DM (text) to a user. */
+export async function sendIgDm(
+  igUserId: string,
+  pageToken: string,
+  recipientIgId: string,
+  text: string,
+  apiVersion?: string,
+): Promise<{ ok: boolean }> {
+  const v = apiVersion ?? DEFAULT_API_VERSION
+  const body = new URLSearchParams()
+  body.set("recipient", JSON.stringify({ id: recipientIgId }))
+  body.set("message", JSON.stringify({ text }))
+  const res = await fetch(`${GRAPH_BASE_URL}/${v}/${igUserId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${pageToken}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  })
+  await parseMetaResponse<unknown>(res)
+  return { ok: true }
+}

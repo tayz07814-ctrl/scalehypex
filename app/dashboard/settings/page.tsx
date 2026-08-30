@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { BotSettingsForm } from "@/components/dashboard/bot-settings-form"
+import { ReplyRulesForm } from "@/components/dashboard/reply-rules-form"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 export const metadata = {
@@ -23,6 +24,12 @@ export default async function SettingsPage() {
     .eq("user_id", user.id)
     .maybeSingle()
 
+  const { data: rules } = await supabase
+    .from("reply_rules")
+    .select("id, keywords, comment_reply, dm_message, enabled")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true })
+
   return (
     <main className="flex flex-1 flex-col">
       <DashboardHeader email={user.email ?? ""} active="/dashboard/settings" />
@@ -36,6 +43,8 @@ export default async function SettingsPage() {
         </div>
 
         <BotSettingsForm initial={settings} />
+
+        <ReplyRulesForm initial={(rules ?? []) as never} />
       </div>
     </main>
   )
