@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 export const runtime = "nodejs"
 
 const TIKTOK_AUTHORIZE_URL = "https://www.tiktok.com/v2/auth/authorize/"
-const TIKTOK_SCOPES = "user.info.basic+video.list"
+const TIKTOK_SCOPES = "user.info.basic,video.list"
 const STATE_COOKIE = "tt_oauth_state"
 const STATE_MAX_AGE_SECONDS = 10 * 60
 
@@ -41,7 +41,8 @@ export async function GET() {
     expires: new Date((now + STATE_MAX_AGE_SECONDS) * 1000),
   })
 
-  // URLSearchParams encodes the "+" in scopes as %2B, as required by TikTok.
+  // URLSearchParams encodes the scopes as application/x-www-form-urlencoded.
+  // TikTok requires scopes as a comma-separated string (per Login Kit Web docs).
   const authorizeUrl = new URL(TIKTOK_AUTHORIZE_URL)
   authorizeUrl.searchParams.set("client_key", clientKey)
   authorizeUrl.searchParams.set("response_type", "code")
