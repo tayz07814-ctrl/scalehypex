@@ -2,7 +2,7 @@
 
 Auto-repost engine for creators: detects new TikTok videos, downloads them watermark-free, and auto-publishes to Instagram Reels + Facebook Pages with the same title/description. Plus a comment auto-reply bot. Reference product: scaledcreator.com.
 
-**STATUS: Phase 10 done — direct CDN fetch (no yt-dlp) + R2 delete-after-1h + live bot terminal tab + keyword auto-reply with DM templates. TikTok OAuth token exchange now sends required redirect_uri. Read this file first, always.**
+**STATUS: Phase 10 done — direct CDN fetch (no yt-dlp) + R2 delete-after-1h + live bot terminal tab + keyword auto-reply with DM templates. TikTok OAuth token exchange now sends required redirect_uri; authorize always shows the account page (disable_auto_auth=1). Read this file first, always.**
 
 ---
 

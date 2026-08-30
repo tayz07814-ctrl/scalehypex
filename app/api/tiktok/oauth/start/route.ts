@@ -49,6 +49,9 @@ export async function GET() {
   authorizeUrl.searchParams.set("scope", TIKTOK_SCOPES)
   authorizeUrl.searchParams.set("redirect_uri", redirectUri)
   authorizeUrl.searchParams.set("state", state)
+  // Always show the TikTok authorization page (even for active TikTok browser
+  // sessions) so the user can confirm which account to connect.
+  authorizeUrl.searchParams.set("disable_auto_auth", "1")
 
   return Response.redirect(authorizeUrl.toString(), 302)
 }
