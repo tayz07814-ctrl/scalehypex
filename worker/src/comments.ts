@@ -58,6 +58,10 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
         const ruleRows = (rules ?? []) as ReplyRule[]
         if (ruleRows.length === 0) continue
 
+        await logBot(supabase, account.user_id, "info", `Comment bot: checking @${account.page_name ?? account.ig_username ?? "account"} (${ruleRows.length} rule(s) active)`, {
+          rules: ruleRows.length,
+        })
+
         const { data: posts, error: postsError } = await supabase
           .from("published_posts")
           .select("id, platform, external_post_id")
@@ -80,6 +84,10 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
           if (totalReplies >= MAX_REPLIES_PER_RUN) break
 
           try {
+            await logBot(supabase, account.user_id, "info", `Checking comments on ${post.platform} post ${post.external_post_id}`, {
+              platform: post.platform,
+              postId: post.external_post_id,
+            })
             let comments: { id: string; text: string; from?: { id?: string; name?: string } }[]
             if (post.platform === "facebook") {
               const res = await getFbPostComments(post.external_post_id, account.page_token)

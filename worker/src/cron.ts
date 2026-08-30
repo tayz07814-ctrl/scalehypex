@@ -71,8 +71,9 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
   for (const account of accounts ?? []) {
     let added = 0
     try {
-      await logBot(supabase, account.user_id, "info", "Checking TikTok for new videos", {
-        username: account.username ?? null,
+      await logBot(supabase, account.user_id, "info", `Polling TikTok video.list for @${account.username ?? "account"}`, {
+        account: account.username ?? null,
+        ttOpenId: account.tt_open_id,
       })
       // rows actually inserted this pass (uuid row id + TikTok video id)
       const newRows: { rowId: string; ttVideoId: string }[] = []
@@ -159,8 +160,10 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
         supabase,
         account.user_id,
         added > 0 ? "success" : "info",
-        added > 0 ? `Found ${added} new video(s)` : "No new videos",
-        { added },
+        added > 0
+          ? `TikTok @${account.username ?? "account"}: ${added} new video(s) detected ${newRows.map((r) => r.ttVideoId).join(", ")}`
+          : `TikTok @${account.username ?? "account"}: no new videos (polled ${newRows.length ? 0 : 0} new)`,
+        { added, detected: newRows.map((r) => r.ttVideoId) },
       )
 
       // after insertion: if the owner auto-publishes, start downloading now
@@ -178,6 +181,9 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
               .eq("id", row.rowId)
             if (error) throw new Error(`mark downloading failed: ${error.message}`)
             await env.JOBS.send({ type: "download_video", videoId: row.rowId })
+            await logBot(supabase, account.user_id, "info", `Enqueued download for video ${row.ttVideoId}`, {
+              ttVideoId: row.ttVideoId,
+            })
           }
         }
       }

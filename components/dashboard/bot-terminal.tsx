@@ -19,7 +19,7 @@ type BotLog = {
 }
 
 const LEVEL_COLOR: Record<BotLog["level"], string> = {
-  info: "text-slate-300",
+  info: "text-sky-400",
   success: "text-emerald-400",
   warn: "text-amber-400",
   error: "text-rose-400",
@@ -39,11 +39,9 @@ export function BotTerminal() {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const runTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Poll bot_logs every 3s (newest first, limit 200).
   React.useEffect(() => {
     const supabase = createBrowserSupabaseClient()
     let cancelled = false
-
     async function load() {
       const { data, error } = await supabase
         .from("bot_logs")
@@ -56,23 +54,15 @@ export function BotTerminal() {
         setConnected(true)
       }
     }
-
     load()
     const t = setInterval(load, 3000)
-    return () => {
-      cancelled = true
-      clearInterval(t)
-    }
+    return () => { cancelled = true; clearInterval(t) }
   }, [])
 
-  // Clear the re-enable timer on unmount.
   React.useEffect(() => {
-    return () => {
-      if (runTimerRef.current) clearTimeout(runTimerRef.current)
-    }
+    return () => { if (runTimerRef.current) clearTimeout(runTimerRef.current) }
   }, [])
 
-  // Auto-scroll to bottom on new logs.
   React.useEffect(() => {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
@@ -82,14 +72,9 @@ export function BotTerminal() {
     setRunning(true)
     try {
       const res = await fetch("/api/bot/run", { method: "POST" })
-      const body = (await res.json().catch(() => null)) as {
-        error?: string
-      } | null
-      if (res.ok) {
-        toast.success("Bot run started — watch the logs below")
-      } else {
-        toast.error(body?.error ?? "Failed to start the bot run")
-      }
+      const body = (await res.json().catch(() => null)) as { error?: string } | null
+      if (res.ok) toast.success("Bot run started - watch the logs below")
+      else toast.error(body?.error ?? "Failed to start the bot run")
     } catch {
       toast.error("Could not reach the bot runner")
     } finally {
@@ -101,39 +86,23 @@ export function BotTerminal() {
     <Card className="glass-card rounded-2xl bg-transparent">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg shadow-cyan-500/30">
-            <TerminalIcon className="size-4.5 text-white" />
+          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 shadow-lg shadow-slate-900/40">
+            <TerminalIcon className="size-4.5 text-emerald-400" />
           </span>
           <CardTitle>Bot terminal</CardTitle>
           <div className="ml-auto flex items-center gap-2">
-            <Button
-              size="sm"
-              className="btn-hero rounded-lg"
-              onClick={runBot}
-              disabled={running}
-            >
-              {running ? (
-                <Loader2Icon className="animate-spin" />
-              ) : (
-                <PlayIcon />
-              )}
-              {running ? "Running…" : "Run bot now"}
+            <Button size="sm" className="btn-hero rounded-lg" onClick={runBot} disabled={running}>
+              {running ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
+              {running ? "Running..." : "Run bot now"}
             </Button>
             <span
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                connected
-                  ? "bg-emerald-500/15 text-emerald-600"
-                  : "bg-slate-500/15 text-slate-500"
+                connected ? "bg-emerald-500/15 text-emerald-600" : "bg-slate-500/15 text-slate-500"
               )}
             >
-              <span
-                className={cn(
-                  "size-1.5 rounded-full",
-                  connected ? "animate-pulse bg-emerald-500" : "bg-slate-500"
-                )}
-              />
-              {connected ? "Live" : "Connecting…"}
+              <span className={cn("size-1.5 rounded-full", connected ? "animate-pulse bg-emerald-500" : "bg-slate-500")} />
+              {connected ? "Live" : "Connecting..."}
             </span>
           </div>
         </div>
@@ -141,28 +110,24 @@ export function BotTerminal() {
       <CardContent>
         <div
           ref={scrollRef}
-          className="h-[420px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 font-mono text-[13px] leading-relaxed"
+          className="h-[420px] overflow-y-auto rounded-xl border border-slate-800 bg-black p-4 font-mono text-[13px] leading-relaxed shadow-inner"
         >
+          <div className="mb-1 flex items-center gap-2 text-slate-500">
+            <span className="text-emerald-400">PS C:&gt;</span>
+            <span>scalehypex-bot --tail -f</span>
+          </div>
           {logs.length === 0 ? (
             <p className="text-slate-500">
-              Waiting for bot activity… connect TikTok + Meta and turn on
-              auto-publish to see the pipeline here.
+              Waiting for bot activity... connect TikTok + Meta and turn on auto-publish to see the pipeline here.
             </p>
           ) : (
             logs.map((log) => (
               <div key={log.id} className="flex gap-2 py-0.5">
-                <span className="shrink-0 text-slate-500">
-                  {timeAgo(log.created_at)}
-                </span>
-                <span
-                  className={cn(
-                    "shrink-0 font-bold",
-                    LEVEL_COLOR[log.level] ?? "text-slate-500"
-                  )}
-                >
+                <span className="shrink-0 text-slate-500">{timeAgo(log.created_at)}</span>
+                <span className={cn("shrink-0 font-bold", LEVEL_COLOR[log.level] ?? "text-slate-300")}>
                   [{LEVEL_TAG[log.level] ?? "INFO"}]
                 </span>
-                <span className={cn("break-words", LEVEL_COLOR[log.level] ?? "text-slate-500")}>
+                <span className={cn("break-words", LEVEL_COLOR[log.level] ?? "text-slate-200")}>
                   {log.message}
                 </span>
               </div>

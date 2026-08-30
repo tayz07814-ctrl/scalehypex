@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card"
 import { ActivityFeed, type ActivityItem } from "@/components/dashboard/activity-feed"
 import { ConnectMetaButton } from "@/components/dashboard/connect-meta-button"
+import { BotTerminal } from "@/components/dashboard/bot-terminal"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DisconnectMetaButton } from "@/components/dashboard/disconnect-meta-button"
 import { DisconnectTikTokButton } from "@/components/dashboard/disconnect-tiktok-button"
@@ -323,6 +324,8 @@ export default async function DashboardPage() {
             </CardFooter>
           </Card>
         </div>
+
+        <BotTerminal />
 
         <ActivityFeed items={(activity ?? []) as ActivityItem[]} />
       </div>
