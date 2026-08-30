@@ -2,7 +2,7 @@
 
 Auto-repost engine for creators: detects new TikTok videos, downloads them watermark-free, and auto-publishes to Instagram Reels + Facebook Pages with the same title/description. Plus a comment auto-reply bot. Reference product: scaledcreator.com.
 
-**STATUS: Phase 9 in progress — Vercel + Supabase + CF Worker deployed. TikTok OAuth scope format fixed (comma-separated) — re-test connect. yt-dlp container still needs build + push. Read this file first, always.**
+**STATUS: Phase 10 in progress — direct CDN fetch + R2 delete-after-1h + live bot terminal tab done. Next: keyword auto-reply with DM templates. Read this file first, always.**
 
 ---
 
@@ -41,7 +41,7 @@ C:\scalehypex
 └── .env.example               [ ] all envs, filled last (user adds real values at end of dev)
 ```
 
-**NEXT ACTION: Re-test TikTok OAuth (scope is now comma-separated). Then build + push the yt-dlp container (GHCR via GitHub Actions) and wire it into the CF Worker as a Durable Object container.**
+**NEXT ACTION: Build the live bot terminal tab (bot_logs) + keyword auto-reply with DM templates (reply_rules).**
 
 ---
 
@@ -141,7 +141,7 @@ RLS: every table `user_id = auth.uid()`. Worker uses service-role key.
 6. `[x]` Publish pipeline IG+FB in consumer
 7. `[x]` Comment bot IG+FB
 8. `[x]` UI polish: landing, dashboard, posts table, settings, logs
-9. `[~]` `.env.example` complete, → Vercel + Supabase + CF Worker deployed; **TikTok OAuth scope fixed (comma-separated `user.info.basic,video.list`) — re-test connect**; yt-dlp container pending build/push (needs GHCR image + DO wiring); wire domains/webhooks
+9. `[~]` `.env.example` complete, → Vercel + Supabase + CF Worker deployed; **TikTok OAuth scope fixed (comma-separated)**; **yt-dlp container DROPPED → direct CDN fetch (v1 API + scrape fallback) + R2 delete-after-1h**; wire domains/webhooks
 
 ## Env vars (final phase)
 
