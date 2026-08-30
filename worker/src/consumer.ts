@@ -68,6 +68,11 @@ async function processDownloadJob(
     return
   }
 
+  if (!env.YTDLP) {
+    await failRow(supabase, videoId, "yt-dlp container not deployed yet (YTDLP binding missing)")
+    return
+  }
+
   // 2. download via the yt-dlp container (image entrypoint is `yt-dlp`).
   //    `-o -` streams the raw mp4 to stdout — the typed Container API
   //    (this wrangler version) has no temp-file read method, so stdout is

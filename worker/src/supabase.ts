@@ -15,8 +15,8 @@ export interface WorkerBindings {
   JOBS: Queue
   /** R2 bucket: scalehypex-videos */
   VIDEOS: R2Bucket
-  /** CF Container whose image entrypoint is `yt-dlp` */
-  YTDLP: Container
+  /** CF Container whose image entrypoint is `yt-dlp` (optional until the container is deployed) */
+  YTDLP?: Container
 }
 
 /**

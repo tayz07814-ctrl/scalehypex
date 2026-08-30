@@ -2,7 +2,7 @@
 
 Auto-repost engine for creators: detects new TikTok videos, downloads them watermark-free, and auto-publishes to Instagram Reels + Facebook Pages with the same title/description. Plus a comment auto-reply bot. Reference product: scaledcreator.com.
 
-**STATUS: Phase 8 done — UI polish (landing, dashboard overview, posts, comments, settings). Next: Phase 9 (.env.example complete, deploy Vercel + CF Worker, wire keys/domains). Read this file first, always.**
+**STATUS: Phase 9 in progress — Vercel + Supabase + CF Worker deployed. TikTok OAuth blocked by `invalid_scope` (`video.list` not enabled on the app); yt-dlp container still needs build + push. Read this file first, always.**
 
 ---
 
@@ -41,7 +41,7 @@ C:\scalehypex
 └── .env.example               [ ] all envs, filled last (user adds real values at end of dev)
 ```
 
-**NEXT ACTION: Phase 9 — .env.example complete, deploy Vercel + CF Worker, wire keys/domains.**
+**NEXT ACTION: Fix TikTok `invalid_scope` (enable `video.list` on the app in the TikTok Developer Console), then build + push the yt-dlp container and re-deploy the CF Worker.**
 
 ---
 
@@ -141,7 +141,7 @@ RLS: every table `user_id = auth.uid()`. Worker uses service-role key.
 6. `[x]` Publish pipeline IG+FB in consumer
 7. `[x]` Comment bot IG+FB
 8. `[x]` UI polish: landing, dashboard, posts table, settings, logs
-9. `[ ]` `.env.example` complete, deploy Vercel + CF Worker, wire domains/webhooks
+9. `[~]` `.env.example` complete, → Vercel + Supabase + CF Worker deployed; **TikTok OAuth blocked (`invalid_scope`, enable `video.list`)**; yt-dlp container pending build/push; wire domains/webhooks
 
 ## Env vars (final phase)
 
