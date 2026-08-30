@@ -23,15 +23,15 @@ type Hue = { chip: string; glow: string }
 
 const STEP_HUES: Hue[] = [
   {
-    chip: "from-[#FFC7D8] to-[#FF8FA3]",
-    glow: "shadow-[#FF8FA3]/40",
+    chip: "from-[#25F4EE] to-[#2DD4BF]",
+    glow: "shadow-[#25F4EE]/40",
   },
   {
     chip: "from-[#DCC9FF] to-[#A78BFA]",
     glow: "shadow-[#A78BFA]/40",
   },
   {
-    chip: "from-[#FFE29A] to-[#FFB47A]",
+    chip: "from-[#DD2A7B] to-[#8134AF]",
     glow: "shadow-[#FFB47A]/40",
   },
 ]
@@ -55,12 +55,12 @@ const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
 ]
 
 const FEATURE_HUES: Hue[] = [
-  { chip: "from-[#FFC7D8] to-[#FF8FA3]", glow: "shadow-[#FF8FA3]/40" },
+  { chip: "from-[#25F4EE] to-[#1877F2]", glow: "shadow-[#25F4EE]/40" },
   { chip: "from-[#DCC9FF] to-[#A78BFA]", glow: "shadow-[#A78BFA]/40" },
-  { chip: "from-[#FFE29A] to-[#FFB47A]", glow: "shadow-[#FFB47A]/40" },
+  { chip: "from-[#FE2C55] to-[#F58529]", glow: "shadow-[#FE2C55]/40" },
   { chip: "from-[#BDF2DC] to-[#7FD8B0]", glow: "shadow-[#7FD8B0]/40" },
   { chip: "from-[#C8E7FF] to-[#8FC4FF]", glow: "shadow-[#8FC4FF]/40" },
-  { chip: "from-[#FFC7D8] to-[#DCC9FF]", glow: "shadow-[#DCC9FF]/40" },
+  { chip: "from-[#1877F2] to-[#8134AF]", glow: "shadow-[#1877F2]/40" },
 ]
 
 const FEATURES: { icon: LucideIcon; title: string; text: string }[] = [
@@ -175,7 +175,7 @@ function BrandPills() {
         TikTok
       </span>
       <span className="rounded-full bg-[#FFE7D9]/60 px-3 py-1 text-xs font-semibold">
-        <span className="bg-gradient-to-r from-[#FFB47A] via-[#FF8FA3] to-[#C9A7FF] bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-[#25F4EE] via-[#1877F2] to-[#FE2C55] bg-clip-text text-transparent">
           Instagram
         </span>
       </span>
@@ -237,8 +237,8 @@ export default function Home() {
           <Reveal>
             <span className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-medium text-[#5B4B48]">
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#FF8FA3] opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-[#FF8FA3]" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#FE2C55] opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-[#FE2C55]" />
               </span>
               TikTok → Instagram Reels + Facebook — on autopilot
             </span>
@@ -298,8 +298,8 @@ export default function Home() {
           <div className="glass-card card-lift relative rounded-3xl p-3">
             <div className="rounded-2xl border border-[#F6E9DF] bg-white p-5">
               <div className="flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full bg-[#FF8FA3]/80" />
-                <span className="size-2.5 rounded-full bg-[#FFC28A]/80" />
+                <span className="size-2.5 rounded-full bg-[#FE2C55]/80" />
+                <span className="size-2.5 rounded-full bg-[#F58529]/80" />
                 <span className="size-2.5 rounded-full bg-[#BDF2DC]/80" />
                 <span className="ml-3 text-xs text-muted-foreground">
                   scalehypex — dashboard
@@ -309,7 +309,7 @@ export default function Home() {
                 <MiniStat
                   label="Videos tracked"
                   value="128"
-                  hue="from-[#FFE29A]/30 to-[#FFE29A]/10"
+                  hue="from-[#25F4EE]/15 to-[#25F4EE]/5"
                 />
                 <MiniStat
                   label="Published"
@@ -319,7 +319,7 @@ export default function Home() {
                 <MiniStat
                   label="Replies sent"
                   value="342"
-                  hue="from-[#FFC7D8]/30 to-[#FFC7D8]/10"
+                  hue="from-[#FE2C55]/15 to-[#FE2C55]/5"
                 />
               </div>
               <div className="mt-4 flex flex-col gap-2">
@@ -334,13 +334,13 @@ export default function Home() {
                   time="21m ago"
                 />
                 <FakeRow
-                  dot="bg-[#FF8FA3]"
+                  dot="bg-[#FE2C55]"
                   title="Auto-reply sent · @yourpage"
                   time="1h ago"
                 />
               </div>
             </div>
-            <div className="glass animate-float absolute -top-5 -right-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-[#FF8FA3]/25">
+            <div className="glass animate-float absolute -top-5 -right-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-[#25F4EE]/25">
               <RocketIcon className="size-3.5 text-[#4FA97F]" />
               Reel published
             </div>
@@ -367,7 +367,7 @@ export default function Home() {
               key={`${item.label}-${i}`}
               className="mx-5 flex items-center gap-2 text-sm whitespace-nowrap text-muted-foreground"
             >
-              <item.icon className="size-4 text-[#FF8FA3]" />
+              <item.icon className="size-4 text-[#FE2C55]" />
               {item.label}
             </span>
           ))}
@@ -498,7 +498,7 @@ export default function Home() {
                 style={{ background: "rgb(255 226 154 / 0.4)" }}
               />
               <div className="relative">
-                <SparklesIcon className="mx-auto size-8 text-[#FF8FA3]" />
+                <SparklesIcon className="mx-auto size-8 text-[#25F4EE]" />
                 <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
                   Ready to scale your reach?
                 </h2>

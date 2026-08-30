@@ -28,38 +28,38 @@ export function DashboardHeader({
     (pathname as (typeof NAV_ITEMS)[number]["href"] | null) ?? active
 
   return (
-    <aside className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#f6e9df] bg-white/85 px-4 py-3 backdrop-blur-xl md:h-screen md:w-64 md:shrink-0 md:flex-col md:flex-nowrap md:items-stretch md:justify-between md:gap-y-4 md:border-r md:border-b-0 md:px-4 md:py-6">
-      <div className="flex items-center md:w-full">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
         <Logo href="/dashboard" />
-      </div>
-      <nav
-        aria-label="Dashboard"
-        className="flex w-full items-center gap-1 overflow-x-auto md:flex-col md:items-stretch md:gap-1.5"
-      >
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            prefetch
-            aria-current={current === item.href ? "page" : undefined}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all md:rounded-xl md:px-3",
-              current === item.href
-                ? "bg-gradient-to-r from-[#FFC7D8] to-[#FF8FA3]/80 text-[#7A2E3E] shadow-md shadow-[#FF8FA3]/30"
-                : "text-[#8C8078] hover:bg-[#FFF1E0] hover:text-[#4A3F3A]"
-            )}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-      <div className="flex items-center gap-3 md:w-full md:flex-col md:items-stretch">
-        <span className="hidden min-w-0 truncate text-sm text-muted-foreground md:block">
-          {email}
-        </span>
-        <ThemeToggle />
+        <nav
+          aria-label="Dashboard"
+          className="flex items-center gap-1 overflow-x-auto"
+        >
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch
+              aria-current={current === item.href ? "page" : undefined}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-all",
+                current === item.href
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-3">
+          <span className="hidden max-w-52 truncate text-sm text-muted-foreground sm:block">
+            {email}
+          </span>
+          <ThemeToggle />
           <SignOutButton />
+        </div>
       </div>
-    </aside>
+    </header>
   )
 }

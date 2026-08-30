@@ -144,7 +144,7 @@ export default async function PostsPage() {
   const rows = (videos ?? []) as unknown as VideoRow[]
 
   return (
-    <main className="flex flex-1 flex-col md:flex-row">
+    <main className="flex flex-1 flex-col">
       <DashboardHeader email={user.email ?? ""} active="/dashboard/posts" />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 sm:px-6 py-8">
