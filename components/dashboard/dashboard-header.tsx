@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
 import { SignOutButton } from "@/components/dashboard/sign-out-button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview" },
@@ -56,7 +57,8 @@ export function DashboardHeader({
         <span className="hidden min-w-0 truncate text-sm text-muted-foreground md:block">
           {email}
         </span>
-        <SignOutButton />
+        <ThemeToggle />
+          <SignOutButton />
       </div>
     </aside>
   )

@@ -16,6 +16,7 @@ import {
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Reveal } from "@/components/reveal"
 
 type Hue = { chip: string; glow: string }
@@ -210,6 +211,7 @@ export default function Home() {
             </a>
           </nav>
           <div className="flex items-center gap-2">
+            <ThemeToggle className="hidden sm:inline-flex" />
             <a
               href="/login"
               className={buttonVariants({ variant: "ghost", size: "sm" })}

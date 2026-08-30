@@ -156,7 +156,7 @@ export default async function DashboardPage() {
     <main className="flex flex-1 flex-col md:flex-row">
       <DashboardHeader email={user.email ?? ""} active="/dashboard" />
 
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 sm:px-6 py-8">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight">
             Overview

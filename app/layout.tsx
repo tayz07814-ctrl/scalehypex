@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -28,7 +29,7 @@ function AuroraBackground() {
           left: "-8%",
           width: "44rem",
           height: "44rem",
-          background: "rgb(255 226 154 / 0.25)",
+          background: "var(--orb-1)",
         }}
       />
       <div
@@ -38,7 +39,7 @@ function AuroraBackground() {
           right: "-12%",
           width: "38rem",
           height: "38rem",
-          background: "rgb(255 199 216 / 0.25)",
+          background: "var(--orb-2)",
         }}
       />
       <div
@@ -48,7 +49,7 @@ function AuroraBackground() {
           left: "20%",
           width: "42rem",
           height: "42rem",
-          background: "rgb(220 201 255 / 0.22)",
+          background: "var(--orb-3)",
           animationDelay: "-9s",
         }}
       />
@@ -61,12 +62,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${nunito.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AuroraBackground />
-        {children}
-        <Toaster richColors position="top-center" />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          themes={["light", "dark", "neo"]}
+          enableSystem={false}
+        >
+          <AuroraBackground />
+          {children}
+          <Toaster richColors position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );
