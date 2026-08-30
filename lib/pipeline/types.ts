@@ -27,7 +27,7 @@ export interface TikTokAccountRow {
 }
 
 /** tiktok_videos.status (see 0002_video_status.sql) */
-export type TikTokVideoStatus = "new" | "downloading" | "ready" | "failed"
+export type TikTokVideoStatus = "new" | "downloading" | "ready" | "published" | "failed"
 
 /** tiktok_videos */
 export interface TikTokVideoRow {
@@ -44,6 +44,7 @@ export interface TikTokVideoRow {
   error: string | null
   duration_ms: number | null
   delete_at: string | null
+  published_at: string | null
 }
 
 /** published_posts (platform is 'ig' | 'fb' in practice; plain text in the DB) */

@@ -2,6 +2,7 @@ import type { WorkerBindings } from "./supabase"
 import { runCron } from "./cron"
 import { consume, type DownloadVideoJob } from "./consumer"
 import { runCommentBot } from "./comments"
+import { runMetricsCollector } from "./metrics"
 import { serveR2Object } from "./serve"
 
 export default {
@@ -57,6 +58,7 @@ export default {
   async scheduled(_event: ScheduledEvent, env: WorkerBindings, ctx: ExecutionContext): Promise<void> {
     await runCron(env, ctx)
     await runCommentBot(env)
+    await runMetricsCollector(env)
   },
   async queue(batch: MessageBatch<DownloadVideoJob>, env: WorkerBindings): Promise<void> {
     await consume(batch, env)

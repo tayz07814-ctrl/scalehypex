@@ -14,14 +14,32 @@ const MAX_REPLIES_PER_RUN = 20
 type ReplyRule = {
   id: string
   keywords: string[]
+  match_mode: "contains" | "exact" | "starts_with"
+  platform: "all" | "instagram" | "facebook"
+  priority: number
   comment_reply: string
   dm_message: string | null
+  dm_enabled: boolean
 }
 
-/** Match a comment against a rule's keywords (case-insensitive substring). */
+/** Apply {{name}} / {{username}} / {{comment}} variables to a template. */
+function applyVars(tpl: string, vars: Record<string, string>): string {
+  return tpl.replace(/\{\{\s*([a-zA-Z_]+)\s*\}\}/g, (m, key) => vars[key] ?? m)
+}
+
+/** Match a comment against a rule's keywords per its match mode. */
 function matchRule(commentText: string, rule: ReplyRule): boolean {
-  const lower = commentText.toLowerCase()
-  return rule.keywords.some((k) => k.trim() !== "" && lower.includes(k.toLowerCase()))
+  const text = commentText.toLowerCase().trim()
+  const kws = rule.keywords.map((k) => k.toLowerCase().trim()).filter(Boolean)
+  if (kws.length === 0) return false
+  switch (rule.match_mode) {
+    case "exact":
+      return kws.some((k) => text === k)
+    case "starts_with":
+      return kws.some((k) => text.startsWith(k))
+    default:
+      return kws.some((k) => text.includes(k))
+  }
 }
 
 /**
@@ -52,9 +70,13 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
         // Load this user's keyword rules (enabled only).
         const { data: rules } = await supabase
           .from("reply_rules")
-          .select("id, keywords, comment_reply, dm_message")
+          .select(
+            "id, keywords, match_mode, platform, priority, comment_reply, dm_message, dm_enabled",
+          )
           .eq("user_id", account.user_id)
           .eq("enabled", true)
+          .order("priority", { ascending: false })
+          .order("created_at", { ascending: true })
         const ruleRows = (rules ?? []) as ReplyRule[]
         if (ruleRows.length === 0) continue
 
@@ -109,9 +131,22 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
               const key = `${post.platform}:${comment.id}`
               if (repliedSet.has(key)) continue
 
-              // Find the first matching rule for this comment.
-              const rule = ruleRows.find((r) => matchRule(comment.text ?? "", r))
+              // First matching rule for this platform (priority-ordered).
+              const candidates = ruleRows.filter(
+                (r) => r.platform === "all" || r.platform === post.platform,
+              )
+              const rule = candidates.find((r) => matchRule(comment.text ?? "", r))
               if (!rule) continue
+
+              const vars = {
+                name: comment.from?.name ?? "there",
+                username:
+                  post.platform === "instagram"
+                    ? (account.ig_username ?? "us")
+                    : (account.page_name ?? "us"),
+                comment: comment.text ?? "",
+              }
+              const replyText = applyVars(rule.comment_reply, vars).slice(0, 2200)
 
               try {
                 let replyId: string
@@ -119,7 +154,7 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
                   const reply = await postFbCommentReply(
                     comment.id,
                     account.page_token,
-                    rule.comment_reply,
+                    replyText,
                   )
                   replyId = reply.id
                 } else {
@@ -127,14 +162,19 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
                     account.ig_user_id!,
                     account.page_token,
                     post.external_post_id,
-                    rule.comment_reply,
+                    replyText,
                   )
                   replyId = reply.id
                 }
 
                 // Optional DM to the commenter (IG only — needs their IG-scoped id).
                 let dmSent = false
-                if (post.platform === "instagram" && rule.dm_message && account.ig_user_id) {
+                if (
+                  post.platform === "instagram" &&
+                  rule.dm_enabled &&
+                  rule.dm_message &&
+                  account.ig_user_id
+                ) {
                   const fromId = comment.from?.id
                   if (fromId) {
                     try {
@@ -142,7 +182,7 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
                         account.ig_user_id,
                         account.page_token,
                         fromId,
-                        rule.dm_message,
+                        applyVars(rule.dm_message, vars).slice(0, 1000),
                       )
                       dmSent = true
                     } catch (dmErr) {
@@ -162,7 +202,7 @@ export async function runCommentBot(env: WorkerBindings): Promise<void> {
                     platform: post.platform,
                     external_comment_id: comment.id,
                     external_reply_id: replyId,
-                    reply_text: rule.comment_reply,
+                    reply_text: replyText,
                   })
                 if (insertError) {
                   throw new Error(`insert replied_comments failed: ${insertError.message}`)

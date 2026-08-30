@@ -20,26 +20,41 @@ import { Switch } from "@/components/ui/switch"
 type Rule = {
   id: string
   keywords: string[]
+  match_mode?: "contains" | "exact" | "starts_with"
+  platform?: "all" | "instagram" | "facebook"
+  priority?: number
   comment_reply: string
   dm_message: string | null
+  dm_enabled?: boolean
   enabled: boolean
 }
 
 type DraftRule = {
   id?: string
   keywords: string
+  match_mode: "contains" | "exact" | "starts_with"
+  platform: "all" | "instagram" | "facebook"
+  priority: string
   comment_reply: string
   dm_message: string
+  dm_enabled: boolean
   enabled: boolean
 }
+
+const selectCls =
+  "h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
 
 export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
   const [rules, setRules] = React.useState<DraftRule[]>(
     (initial ?? []).map((r) => ({
       id: r.id,
       keywords: r.keywords.join(", "),
+      match_mode: r.match_mode ?? "contains",
+      platform: r.platform ?? "all",
+      priority: String(r.priority ?? 0),
       comment_reply: r.comment_reply,
       dm_message: r.dm_message ?? "",
+      dm_enabled: r.dm_enabled ?? true,
       enabled: r.enabled,
     }))
   )
@@ -48,7 +63,16 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
   function addRule() {
     setRules((prev) => [
       ...prev,
-      { keywords: "", comment_reply: "", dm_message: "", enabled: true },
+      {
+        keywords: "",
+        match_mode: "contains",
+        platform: "all",
+        priority: "0",
+        comment_reply: "",
+        dm_message: "",
+        dm_enabled: true,
+        enabled: true,
+      },
     ])
   }
 
@@ -70,7 +94,6 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
       return
     }
 
-    // Validate: each rule needs keywords + a comment reply.
     const valid = rules.filter(
       (r) => r.keywords.trim() !== "" && r.comment_reply.trim() !== ""
     )
@@ -81,15 +104,18 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
 
     setSaving(true)
     try {
-      // Delete all existing rules for this user, then re-insert (simple replace).
       await supabase.from("reply_rules").delete().eq("user_id", userId)
       if (valid.length > 0) {
         const { error } = await supabase.from("reply_rules").insert(
           valid.map((r) => ({
             user_id: userId,
             keywords: r.keywords.split(",").map((k) => k.trim()).filter(Boolean),
+            match_mode: r.match_mode,
+            platform: r.platform,
+            priority: Number(r.priority) || 0,
             comment_reply: r.comment_reply.trim(),
             dm_message: r.dm_message.trim() !== "" ? r.dm_message.trim() : null,
+            dm_enabled: r.dm_enabled,
             enabled: r.enabled,
           }))
         )
@@ -124,10 +150,7 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
           </p>
         ) : (
           rules.map((rule, i) => (
-            <div
-              key={i}
-              className="flex flex-col gap-3 rounded-xl border border-white/10 p-4"
-            >
+            <div key={i} className="flex flex-col gap-3 rounded-xl border border-white/10 p-4">
               <div className="flex items-center justify-between gap-2">
                 <Label className="text-sm font-medium">Rule {i + 1}</Label>
                 <div className="flex items-center gap-2">
@@ -136,12 +159,7 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
                     onCheckedChange={(v) => updateRule(i, { enabled: v })}
                     aria-label={`Enable rule ${i + 1}`}
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeRule(i)}
-                    aria-label={`Delete rule ${i + 1}`}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => removeRule(i)} aria-label={`Delete rule ${i + 1}`}>
                     <Trash2Icon className="size-4 text-rose-400" />
                   </Button>
                 </div>
@@ -155,6 +173,44 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
                   placeholder="price, cost, how much"
                 />
               </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor={`match-${i}`}>Match mode</Label>
+                  <select
+                    id={`match-${i}`}
+                    value={rule.match_mode}
+                    onChange={(e) => updateRule(i, { match_mode: e.target.value as DraftRule["match_mode"] })}
+                    className={selectCls}
+                  >
+                    <option value="contains">Contains</option>
+                    <option value="exact">Exact match</option>
+                    <option value="starts_with">Starts with</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor={`platform-${i}`}>Platform</Label>
+                  <select
+                    id={`platform-${i}`}
+                    value={rule.platform}
+                    onChange={(e) => updateRule(i, { platform: e.target.value as DraftRule["platform"] })}
+                    className={selectCls}
+                  >
+                    <option value="all">All</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="facebook">Facebook</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor={`priority-${i}`}>Priority (higher = checked first)</Label>
+                  <Input
+                    id={`priority-${i}`}
+                    type="number"
+                    value={rule.priority}
+                    onChange={(e) => updateRule(i, { priority: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor={`reply-${i}`}>Comment reply</Label>
                 <Input
@@ -164,14 +220,24 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
                   placeholder="Check your DMs!"
                   maxLength={2200}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Variables: {"{{name}}"} {"{{username}}"} {"{{comment}}"}
+                </p>
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor={`dm-${i}`}>DM message (optional, Instagram only)</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor={`dm-${i}`}>DM message (Instagram only)</Label>
+                  <Switch
+                    checked={rule.dm_enabled}
+                    onCheckedChange={(v) => updateRule(i, { dm_enabled: v })}
+                    aria-label={`Send DM for rule ${i + 1}`}
+                  />
+                </div>
                 <Input
                   id={`dm-${i}`}
                   value={rule.dm_message}
                   onChange={(e) => updateRule(i, { dm_message: e.target.value })}
-                  placeholder="Hey! Thanks for asking — here's the info…"
+                  placeholder="Hey! Thanks for asking, here's the info!"
                   maxLength={1000}
                 />
               </div>
@@ -185,12 +251,8 @@ export function ReplyRulesForm({ initial }: { initial: Rule[] }) {
         </Button>
       </CardContent>
       <div className="px-6 pb-6">
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn-hero rounded-lg"
-        >
-          {saving ? "Saving…" : "Save rules"}
+        <Button onClick={handleSave} disabled={saving} className="btn-hero rounded-lg">
+          {saving ? "Saving..." : "Save rules"}
         </Button>
       </div>
     </Card>

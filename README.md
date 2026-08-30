@@ -2,7 +2,7 @@
 
 Auto-repost engine for creators: detects new TikTok videos, downloads them watermark-free, and auto-publishes to Instagram Reels + Facebook Pages with the same title/description. Plus a comment auto-reply bot. Reference product: scaledcreator.com.
 
-**STATUS: Phase 11 done — light brand theme (TikTok cyan #25F4EE + FB blue #1877F2 + IG gradient + red #FE2C55) + landing page light remake with brand pills, dashboard account avatars (TikTok/Meta profile pictures), manual "Run bot now" button (worker /run endpoint + /api/bot/run), instant tab switching (client header w/ prefetch + loading skeleton). Read this file first, always.**
+**STATUS: Phase 12 - buttery soft 3D theme (warm cream #FFFBF6 palette, pastel gradients, layered warm shadows, Nunito rounded font via next/font, soft pastel aurora orbs) + landing page split hero with floating dashboard mockup + dashboard left sidebar navigation (mobile top strip) + richer reply rules UI. Read this file first, always.**
 
 ---
 

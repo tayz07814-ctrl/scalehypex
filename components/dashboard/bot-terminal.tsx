@@ -86,7 +86,7 @@ export function BotTerminal() {
     <Card className="glass-card rounded-2xl bg-transparent">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 shadow-lg shadow-slate-900/40">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#4A3F3A] to-[#6B584F] shadow-lg shadow-[#4A3F3A]/40">
             <TerminalIcon className="size-4.5 text-emerald-400" />
           </span>
           <CardTitle>Bot terminal</CardTitle>
@@ -98,10 +98,10 @@ export function BotTerminal() {
             <span
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                connected ? "bg-emerald-500/15 text-emerald-600" : "bg-slate-500/15 text-slate-500"
+                connected ? "bg-emerald-500/15 text-emerald-600" : "bg-[#F3E8E1] text-[#A79A92]"
               )}
             >
-              <span className={cn("size-1.5 rounded-full", connected ? "animate-pulse bg-emerald-500" : "bg-slate-500")} />
+              <span className={cn("size-1.5 rounded-full", connected ? "animate-pulse bg-emerald-500" : "bg-[#C0B4AA]")} />
               {connected ? "Live" : "Connecting..."}
             </span>
           </div>

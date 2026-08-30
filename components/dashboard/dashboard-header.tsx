@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/posts", label: "Posts" },
   { href: "/dashboard/comments", label: "Comments" },
+  { href: "/dashboard/analytics", label: "Analytics" },
   { href: "/dashboard/settings", label: "Settings" },
 ] as const
 
@@ -26,34 +27,37 @@ export function DashboardHeader({
     (pathname as (typeof NAV_ITEMS)[number]["href"] | null) ?? active
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/70 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
+    <aside className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#f6e9df] bg-white/85 px-4 py-3 backdrop-blur-xl md:h-screen md:w-64 md:shrink-0 md:flex-col md:flex-nowrap md:items-stretch md:justify-between md:gap-y-4 md:border-r md:border-b-0 md:px-4 md:py-6">
+      <div className="flex items-center md:w-full">
         <Logo href="/dashboard" />
-        <nav aria-label="Dashboard" className="flex items-center gap-1">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch
-              aria-current={current === item.href ? "page" : undefined}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
-                current === item.href
-                  ? "bg-gradient-to-r from-[#25f4ee] to-[#fe2c55] text-white shadow-lg shadow-rose-500/25"
-                  : "text-muted-foreground hover:bg-slate-100 hover:text-foreground"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center gap-3">
-          <span className="hidden max-w-52 truncate text-sm text-muted-foreground sm:block">
-            {email}
-          </span>
-          <SignOutButton />
-        </div>
       </div>
-    </header>
+      <nav
+        aria-label="Dashboard"
+        className="flex w-full items-center gap-1 overflow-x-auto md:flex-col md:items-stretch md:gap-1.5"
+      >
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch
+            aria-current={current === item.href ? "page" : undefined}
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all md:rounded-xl md:px-3",
+              current === item.href
+                ? "bg-gradient-to-r from-[#FFC7D8] to-[#FF8FA3]/80 text-[#7A2E3E] shadow-md shadow-[#FF8FA3]/30"
+                : "text-[#8C8078] hover:bg-[#FFF1E0] hover:text-[#4A3F3A]"
+            )}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <div className="flex items-center gap-3 md:w-full md:flex-col md:items-stretch">
+        <span className="hidden min-w-0 truncate text-sm text-muted-foreground md:block">
+          {email}
+        </span>
+        <SignOutButton />
+      </div>
+    </aside>
   )
 }

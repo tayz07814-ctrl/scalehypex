@@ -217,5 +217,15 @@ async function publishVideoInner(
     action: "video_published",
     details: { ttVideoId: video.video_id, published, failed },
   })
+
+  // Mark the video row published once at least one platform succeeded —
+  // the dashboard Posters/Posts table shows this as the final status.
+  if (published > 0) {
+    const { error: pubErr } = await supabase
+      .from("tiktok_videos")
+      .update({ status: "published", published_at: new Date().toISOString() })
+      .eq("id", video.id)
+    if (pubErr) console.error(`publish: mark video published failed: ${pubErr.message}`)
+  }
   return { published, failed }
 }

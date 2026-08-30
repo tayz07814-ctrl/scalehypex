@@ -481,3 +481,169 @@ export async function sendIgDm(
   await parseMetaResponse<unknown>(res)
   return { ok: true }
 }
+
+// ---------------------------------------------------------------------------
+// Phase 8 — video metrics (per-published-post analytics).
+//
+// IG: GET /{mediaId} fields (likes/comments/media_product_type/permalink)
+// plus GET /{mediaId}/insights?metric=plays,saved,shares&period=lifetime.
+// FB: GET /{videoId}/video_insights?metric=total_video_views,
+// total_video_impressions&period=lifetime plus GET /{videoId} fields
+// (likes/comments summaries, shares, views).
+// Tolerant: 400/404 return partial results with null-like defaults —
+// never throws (the collector must survive bad/deleted media).
+// ---------------------------------------------------------------------------
+
+export interface IgMediaMetrics {
+  like_count?: number
+  comments_count?: number
+  plays?: number
+  saved?: number
+  shares?: number
+  permalink?: string
+  media_product_type?: string
+}
+
+interface IgInsightValue {
+  value?: number
+}
+
+interface IgInsight {
+  name?: string
+  period?: string
+  values?: IgInsightValue[]
+}
+
+interface IgMediaFieldsResponse {
+  like_count?: number
+  comments_count?: number
+  media_product_type?: string
+  permalink?: string
+}
+
+/** Pull one metric value out of a Graph insights { data: [...] } payload. */
+function insightValue(
+  data: IgInsight[] | undefined,
+  name: string,
+): number | undefined {
+  const found = (data ?? []).find((d) => d.name === name)
+  return found?.values?.[0]?.value
+}
+
+/**
+ * GET /{mediaId} (+ /{mediaId}/insights) — IG Business media performance for
+ * a published Reel/post: likes, comments, lifetime plays/saves/shares,
+ * permalink. Tolerant: 400/404 → empty-ish result, never throws to caller.
+ */
+export async function getIgMediaMetrics(
+  igUserId: string,
+  pageToken: string,
+  mediaId: string,
+  apiVersion?: string,
+): Promise<IgMediaMetrics> {
+  const v = apiVersion ?? DEFAULT_API_VERSION
+  const result: IgMediaMetrics = {}
+
+  try {
+    const url = new URL(`${GRAPH_BASE_URL}/${v}/${mediaId}`)
+    url.searchParams.set(
+      "fields",
+      "like_count,comments_count,media_product_type,media_type,permalink,timestamp",
+    )
+    url.searchParams.set("metric_type", "plays")
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${pageToken}` },
+    })
+    if (res.status === 400 || res.status === 404) return result
+    const body = await parseMetaResponse<IgMediaFieldsResponse>(res)
+    result.like_count = body.like_count
+    result.comments_count = body.comments_count
+    result.media_product_type = body.media_product_type
+    result.permalink = body.permalink
+  } catch {
+    return result
+  }
+
+  try {
+    const url = new URL(`${GRAPH_BASE_URL}/${v}/${mediaId}/insights`)
+    url.searchParams.set("metric", "plays,saved,shares")
+    url.searchParams.set("period", "lifetime")
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${pageToken}` },
+    })
+    if (res.status === 400 || res.status === 404) return result
+    const body = await parseMetaResponse<{ data?: IgInsight[] }>(res)
+    result.plays = insightValue(body.data, "plays")
+    result.saved = insightValue(body.data, "saved")
+    result.shares = insightValue(body.data, "shares")
+  } catch {
+    // Insights are optional — keep whatever the media fields call returned.
+  }
+  return result
+}
+
+export interface FbVideoMetrics {
+  views?: number
+  likes?: number
+  comments_count?: number
+  shares?: number
+}
+
+interface FbVideoFieldsResponse {
+  views?: number
+  likes?: { summary?: { total_count?: number } }
+  comments?: { summary?: { total_count?: number } }
+  shares?: { count?: number } | number
+}
+
+/**
+ * GET /{videoId}/video_insights + /{videoId} — Facebook page video
+ * performance: total views, likes, comments, shares. Tolerant: 400/404 →
+ * partial result, never throws to caller.
+ */
+export async function getFbVideoMetrics(
+  pageId: string,
+  pageToken: string,
+  videoId: string,
+  apiVersion?: string,
+): Promise<FbVideoMetrics> {
+  const v = apiVersion ?? DEFAULT_API_VERSION
+  const result: FbVideoMetrics = {}
+
+  try {
+    const url = new URL(`${GRAPH_BASE_URL}/${v}/${videoId}/video_insights`)
+    url.searchParams.set("metric", "total_video_views,total_video_impressions")
+    url.searchParams.set("period", "lifetime")
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${pageToken}` },
+    })
+    if (res.status === 400 || res.status === 404) return result
+    const body = await parseMetaResponse<{ data?: IgInsight[] }>(res)
+    result.views =
+      insightValue(body.data, "total_video_views") ??
+      insightValue(body.data, "total_video_impressions")
+  } catch {
+    return result
+  }
+
+  try {
+    const url = new URL(`${GRAPH_BASE_URL}/${v}/${videoId}`)
+    url.searchParams.set(
+      "fields",
+      "likes.summary(true),comments.summary(true),shares,views",
+    )
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${pageToken}` },
+    })
+    if (res.status === 400 || res.status === 404) return result
+    const body = await parseMetaResponse<FbVideoFieldsResponse>(res)
+    result.views = body.views ?? result.views
+    result.likes = body.likes?.summary?.total_count
+    result.comments_count = body.comments?.summary?.total_count
+    result.shares =
+      typeof body.shares === "number" ? body.shares : body.shares?.count
+  } catch {
+    // Fields are optional — keep whatever the insights call returned.
+  }
+  return result
+}

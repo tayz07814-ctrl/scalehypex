@@ -50,11 +50,13 @@ async function parseTikTokResponse<T>(res: Response): Promise<T> {
       `TikTok API returned a non-JSON response (status ${res.status})`,
     )
   }
-  // TikTok returns HTTP 200 even on API errors (e.g. invalid_grant), with the
-  // error in the JSON body. Treat that as an error, not a success.
+  // TikTok returns HTTP 200 with an `error` object ALWAYS present — including
+  // on success where code === "ok" (e.g. video.list). Only treat non-"ok"
+  // error codes as failures; a successful call must not throw.
   const envelope = body as TikTokErrorEnvelope
-  if (!res.ok || envelope?.error) {
-    const err = envelope?.error
+  const err = envelope?.error
+  const isApiError = err != null && err.code !== "ok"
+  if (!res.ok || isApiError) {
     throw new TikTokApiError(
       res.status,
       err?.code ?? "unknown",
@@ -193,19 +195,23 @@ interface TikTokVideoListResponse {
 export async function listVideos(
   accessToken: string,
   cursor = 0,
-  count = 35,
+  maxCount = 20,
 ): Promise<TikTokVideoList> {
-  const res = await fetch(
-    `${TIKTOK_BASE_URL}/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,create_time`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json; charset=UTF-8",
-      },
-      body: JSON.stringify({ cursor, count }),
-    },
+  // TikTok v2 video.list requires `max_count` (max 20) in the body AND a
+  // `fields` query param. Sending `count` or omitting fields returns HTTP 400.
+  const url = new URL(`${TIKTOK_BASE_URL}/v2/video/list/`)
+  url.searchParams.set(
+    "fields",
+    "id,title,video_description,duration,cover_image_url,create_time",
   )
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+    body: JSON.stringify({ cursor, max_count: maxCount }),
+  })
   const body = await parseTikTokResponse<TikTokVideoListResponse>(res)
   return body.data
 }

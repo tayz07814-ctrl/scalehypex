@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -32,7 +28,7 @@ function AuroraBackground() {
           left: "-8%",
           width: "44rem",
           height: "44rem",
-          background: "rgb(37 244 238 / 0.15)",
+          background: "rgb(255 226 154 / 0.25)",
         }}
       />
       <div
@@ -42,7 +38,7 @@ function AuroraBackground() {
           right: "-12%",
           width: "38rem",
           height: "38rem",
-          background: "rgb(236 72 153 / 0.12)",
+          background: "rgb(255 199 216 / 0.25)",
         }}
       />
       <div
@@ -52,7 +48,7 @@ function AuroraBackground() {
           left: "20%",
           width: "42rem",
           height: "42rem",
-          background: "rgb(24 119 242 / 0.12)",
+          background: "rgb(220 201 255 / 0.22)",
           animationDelay: "-9s",
         }}
       />
@@ -65,7 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${nunito.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuroraBackground />

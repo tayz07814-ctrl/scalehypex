@@ -34,7 +34,7 @@ type VideoRow = {
   id: string
   description: string | null
   fetched_at: string
-  status: "new" | "downloading" | "ready" | "failed"
+  status: "new" | "downloading" | "ready" | "published" | "failed"
   error: string | null
   published_posts: PublishRow[]
 }
@@ -49,18 +49,22 @@ function PipelineBadge({
   switch (status) {
     case "new":
       return (
-        <Badge className="bg-slate-400/15 text-slate-300">Queued</Badge>
+        <Badge className="bg-[#F3E8E1] text-[#8C8078]">Listed</Badge>
       )
     case "downloading":
       return (
         <Badge className="gap-1.5 bg-amber-500/15 text-amber-300">
           <span className="size-1.5 animate-pulse rounded-full bg-amber-400" />
-          Downloading
+          Queued
         </Badge>
       )
     case "ready":
       return (
-        <Badge className="bg-emerald-500/15 text-emerald-300">Ready</Badge>
+        <Badge className="bg-sky-500/15 text-sky-300">Ready</Badge>
+      )
+    case "published":
+      return (
+        <Badge className="bg-emerald-500/15 text-emerald-300">Published</Badge>
       )
     case "failed":
       return (
@@ -140,7 +144,7 @@ export default async function PostsPage() {
   const rows = (videos ?? []) as unknown as VideoRow[]
 
   return (
-    <main className="flex flex-1 flex-col">
+    <main className="flex flex-1 flex-col md:flex-row">
       <DashboardHeader email={user.email ?? ""} active="/dashboard/posts" />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
