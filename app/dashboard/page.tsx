@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { getUserInfo, refreshAccessToken } from "@/lib/tiktok/api"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
@@ -76,7 +77,9 @@ export default async function DashboardPage() {
   // UI-safe columns only — tokens never leave the DB.
   const { data: tiktokAccount } = await supabase
     .from("tiktok_accounts")
-    .select("username, avatar_url, created_at")
+    .select(
+      "id, username, avatar_url, access_token, refresh_token, token_expires_at, created_at"
+    )
     .eq("user_id", user.id)
     .maybeSingle()
 
@@ -84,6 +87,50 @@ export default async function DashboardPage() {
     .from("meta_accounts")
     .select("id, fb_page_id, page_name, ig_username, ig_picture_url, created_at")
     .eq("user_id", user.id)
+
+  // Auto-heal: rows connected before avatar storage existed may have NULL
+  // username/avatar_url. Refresh the TikTok token if needed and fetch the
+  // profile server-side. Tokens are selected but never rendered to the client.
+  let tiktokUsername = tiktokAccount?.username ?? null
+  let tiktokAvatar = tiktokAccount?.avatar_url ?? null
+  if (
+    tiktokAccount &&
+    (!tiktokUsername || !tiktokAvatar) &&
+    (tiktokAccount.access_token || tiktokAccount.refresh_token)
+  ) {
+    try {
+      let token = tiktokAccount.access_token
+      let refreshToken = tiktokAccount.refresh_token
+      let expiresAt = tiktokAccount.token_expires_at
+      const needsRefresh =
+        !token ||
+        !expiresAt ||
+        Date.parse(expiresAt) - Date.now() <= 60 * 60 * 1000
+      if (needsRefresh && refreshToken) {
+        const tokens = await refreshAccessToken(refreshToken)
+        token = tokens.access_token
+        refreshToken = tokens.refresh_token ?? refreshToken
+        expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString()
+      }
+      if (token) {
+        const ttUser = await getUserInfo(token)
+        tiktokUsername = ttUser.display_name ?? tiktokUsername
+        tiktokAvatar = ttUser.avatar_url ?? tiktokAvatar
+        await supabase
+          .from("tiktok_accounts")
+          .update({
+            username: tiktokUsername,
+            avatar_url: tiktokAvatar,
+            access_token: token,
+            refresh_token: refreshToken,
+            token_expires_at: expiresAt,
+          })
+          .eq("id", tiktokAccount.id)
+      }
+    } catch {
+      // Best-effort: fall back to the letter avatar if this fails.
+    }
+  }
 
   const { count: videoCount } = await supabase
     .from("tiktok_videos")
@@ -165,15 +212,15 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-2.5">
                     <Avatar>
                       <AvatarImage
-                        src={tiktokAccount.avatar_url ?? undefined}
-                        alt={tiktokAccount.username ?? "TikTok account"}
+                        src={tiktokAvatar ?? undefined}
+                        alt={tiktokUsername ?? "TikTok account"}
                       />
                       <AvatarFallback>
-                        {(tiktokAccount.username ?? "T").charAt(0).toUpperCase()}
+                        {(tiktokUsername ?? "T").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <span className="font-medium">
-                      {tiktokAccount.username ?? "TikTok account"}
+                      {tiktokUsername ?? "TikTok account"}
                     </span>
                     <Badge className="bg-emerald-500/15 text-emerald-600">
                       Connected
