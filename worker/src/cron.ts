@@ -4,7 +4,6 @@ import {
   refreshAccessToken as ttRefreshAccessToken,
   listVideos as ttListVideos,
 } from "../../lib/tiktok/api"
-import { resolveWatermarkFreeUrl } from "../../lib/tiktok/cdn"
 import { logBot } from "./botlog"
 
 /** Rows stuck in `downloading` longer than this are reset to `new` by cron. */
@@ -118,17 +117,6 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
         },
         insertVideos: async (rows) => {
           for (const row of rows) {
-            // Resolve the watermark-free CDN URL only for brand-new rows
-            // (v1 API first, page-scrape fallback).
-            let cdnUrl: string | null = row.cdnUrl ?? null
-            if (!cdnUrl) {
-              try {
-                const resolved = await resolveWatermarkFreeUrl(activeToken, row.videoId)
-                cdnUrl = resolved?.url ?? null
-              } catch {
-                cdnUrl = null
-              }
-            }
             // one-by-one; a unique (account, video_id) violation (23505)
             // means this video was already polled — skip it
             const { data, error } = await supabase
@@ -138,7 +126,7 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
                 video_id: row.videoId,
                 description: row.description,
                 download_url: row.downloadUrl,
-                cdn_url: cdnUrl,
+                cdn_url: row.cdnUrl,
                 duration_ms: row.durationMs,
                 status: "new",
               })
@@ -183,6 +171,35 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
             await env.JOBS.send({ type: "download_video", videoId: row.rowId })
             await logBot(supabase, account.user_id, "info", `Enqueued download for video ${row.ttVideoId}`, {
               ttVideoId: row.ttVideoId,
+            })
+          }
+        }
+      }
+
+      // Catch-up: enqueue rows still stuck in `new` from before auto-publish
+      // was enabled (they were inserted in an earlier pass, so newRows above
+      // won't include them and the poller cursor has already passed them).
+      {
+        const { data: settings } = await supabase
+          .from("bot_settings")
+          .select("auto_publish")
+          .eq("user_id", account.user_id)
+          .maybeSingle()
+        if (settings?.auto_publish === true) {
+          const { data: pending } = await supabase
+            .from("tiktok_videos")
+            .select("id, video_id")
+            .eq("tiktok_account_id", account.id)
+            .eq("status", "new")
+          for (const row of pending ?? []) {
+            const { error } = await supabase
+              .from("tiktok_videos")
+              .update({ status: "downloading" })
+              .eq("id", row.id)
+            if (error) throw new Error(`catch-up mark downloading failed: ${error.message}`)
+            await env.JOBS.send({ type: "download_video", videoId: row.id })
+            await logBot(supabase, account.user_id, "info", `Enqueued catch-up download for video ${row.video_id}`, {
+              ttVideoId: row.video_id,
             })
           }
         }

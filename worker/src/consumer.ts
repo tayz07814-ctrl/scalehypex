@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import { createSupabaseClient, type WorkerBindings } from "./supabase"
 import { publicR2Url, videoR2Key } from "../../lib/pipeline/r2"
 import type { TikTokVideoRow } from "../../lib/pipeline/types"
+import { getContainer } from "@cloudflare/containers"
 import { publishVideo } from "./publish"
 import { logBot } from "./botlog"
 
@@ -14,36 +15,7 @@ export interface DownloadVideoJob {
 /** How long a published video stays in R2 before deletion (1 hour). */
 export const R2_RETENTION_MS = 60 * 60 * 1000
 
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
-/**
- * Fetch the mp4 bytes from a TikTok CDN URL with browser-like headers and
- * retries (TikTok CDN can 403 or throttle without them).
- */
-async function fetchCdnBytes(url: string): Promise<ArrayBuffer> {
-  let lastErr: unknown
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const res = await fetch(url, {
-        headers: {
-          "User-Agent": UA,
-          Referer: "https://www.tiktok.com/",
-          Accept: "video/mp4,*/*;q=0.8",
-        },
-        signal: AbortSignal.timeout(120_000),
-      })
-      if (!res.ok) throw new Error(`CDN HTTP ${res.status}`)
-      const buf = await res.arrayBuffer()
-      if (buf.byteLength === 0) throw new Error("CDN returned empty body")
-      return buf
-    } catch (err) {
-      lastErr = err
-      if (attempt < 3) await new Promise((r) => setTimeout(r, 1500 * attempt))
-    }
-  }
-  throw lastErr instanceof Error ? lastErr : new Error("CDN fetch failed")
-}
 
 /**
  * Queue consumer (scalehypex-jobs): fetch the video from TikTok CDN (no
@@ -99,19 +71,26 @@ async function processDownloadJob(
   }
   const userId = (account as { user_id: string }).user_id
 
-  // 2. source URL: prefer the resolved CDN url (cdn_url), else download_url
-  const sourceUrl = video.cdn_url ?? video.download_url
-  if (!sourceUrl) {
-    await failRow(supabase, videoId, "video row has no CDN/download URL")
+  // 2. source = the TikTok video page URL; yt-dlp resolves the no-watermark
+  //    stream itself (direct CDN fetch is blocked by Akamai in 2026).
+  if (!video.download_url) {
+    await failRow(supabase, videoId, "video row has no page URL")
     return
   }
 
-  await logBot(supabase, userId, "info", "Fetching video from TikTok CDN", {
+  await logBot(supabase, userId, "info", "Downloading via yt-dlp container", {
     ttVideoId: video.video_id,
   })
 
-  // 3. fetch the mp4 bytes (browser headers + retries)
-  const bytes = await fetchCdnBytes(sourceUrl)
+  // 3. run yt-dlp in the container; raw mp4 arrives on stdout
+  const container = getContainer(env.YTDLP, `dl-${videoId.slice(0, 8)}`)
+  const out = await container.downloadVideo(video.download_url)
+  if (out.exitCode !== 0) {
+    const detail = new TextDecoder().decode(out.stderr).slice(-500)
+    await failRow(supabase, videoId, detail || `yt-dlp exit code ${out.exitCode}`)
+    return
+  }
+  const bytes = out.stdout
 
   // 4. upload to R2
   const key = videoR2Key(userId, video.video_id)

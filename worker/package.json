@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@cloudflare/containers": "^0.3.7",
     "@supabase/supabase-js": "^2.112.4"
   },
   "devDependencies": {

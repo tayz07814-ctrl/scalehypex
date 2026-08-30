@@ -28,6 +28,29 @@
       "bucket_name": "scalehypex-videos"
     }
   ],
+  "containers": [
+    {
+      "name": "YTDLP",
+      "class_name": "YtDlpContainer",
+      "image": "ghcr.io/tayz07814-ctrl/scalehypex-ytdlp:latest",
+      "max_instances": 2,
+      "instance_type": "lite"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "YTDLP",
+        "class_name": "YtDlpContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["YtDlpContainer"]
+    }
+  ],
   "vars": {
     "SUPABASE_URL": "https://qjaezbkmpvjxdidbhfin.supabase.co",
     "R2_PUBLIC_BASE": "https://scalehypex.tayz07814.workers.dev/v"
