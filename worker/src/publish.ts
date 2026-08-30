@@ -22,11 +22,12 @@ export async function publishVideo(
   userId: string,
   video: TikTokVideoRow,
   url: string,
-): Promise<void> {
+): Promise<{ published: number; failed: number }> {
   try {
-    await publishVideoInner(supabase, userId, video, url)
+    return await publishVideoInner(supabase, userId, video, url)
   } catch (err) {
     console.error("publishVideo: unexpected error", err)
+    return { published: 0, failed: 1 }
   }
 }
 
@@ -168,7 +169,7 @@ async function publishVideoInner(
   userId: string,
   video: TikTokVideoRow,
   url: string,
-): Promise<void> {
+): Promise<{ published: number; failed: number }> {
   // Gate: only auto-publish when the user opted in (no row => disabled).
   const { data: settings } = await supabase
     .from("bot_settings")
@@ -181,7 +182,7 @@ async function publishVideoInner(
       action: "publish_skipped",
       details: { ttVideoId: video.video_id, reason: "auto_publish_disabled" },
     })
-    return
+    return { published: 0, failed: 0 }
   }
 
   const caption = (video.description ?? "").trim().slice(0, 2150)
@@ -216,4 +217,5 @@ async function publishVideoInner(
     action: "video_published",
     details: { ttVideoId: video.video_id, published, failed },
   })
+  return { published, failed }
 }

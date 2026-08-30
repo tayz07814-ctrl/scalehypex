@@ -13,3 +13,9 @@ alter table public.tiktok_videos add column if not exists duration_ms integer;
 -- indexes
 
 create index if not exists idx_tiktok_videos_status on public.tiktok_videos (status);
+
+-- Phase 10: direct CDN download URL (watermark-free playAddr) for the worker.
+alter table public.tiktok_videos add column if not exists cdn_url text;
+
+-- Phase 10: R2 deletion timestamp (1h after successful publish).
+alter table public.tiktok_videos add column if not exists delete_at timestamptz;

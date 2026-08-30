@@ -160,6 +160,7 @@ export interface TikTokVideo {
   id: string
   create_time: number
   title: string
+  video_description?: string
   cover: string
   duration: number
   video_tags?: string[]
@@ -188,14 +189,17 @@ export async function listVideos(
   cursor = 0,
   count = 35,
 ): Promise<TikTokVideoList> {
-  const res = await fetch(`${TIKTOK_BASE_URL}/v2/video/list/`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json; charset=UTF-8",
+  const res = await fetch(
+    `${TIKTOK_BASE_URL}/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,create_time`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify({ cursor, count }),
     },
-    body: JSON.stringify({ cursor, count }),
-  })
+  )
   const body = await parseTikTokResponse<TikTokVideoListResponse>(res)
   return body.data
 }

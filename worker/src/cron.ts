@@ -4,6 +4,7 @@ import {
   refreshAccessToken as ttRefreshAccessToken,
   listVideos as ttListVideos,
 } from "../../lib/tiktok/api"
+import { resolveWatermarkFreeUrl } from "../../lib/tiktok/cdn"
 
 /** Rows stuck in `downloading` longer than this are reset to `new` by cron. */
 const STUCK_DOWNLOADING_MS = 30 * 60 * 1000
@@ -17,6 +18,39 @@ const STUCK_DOWNLOADING_MS = 30 * 60 * 1000
 export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Promise<void> {
   const supabase = createSupabaseClient(env)
   const credentials = { clientKey: env.TIKTOK_CLIENT_KEY, clientSecret: env.TIKTOK_CLIENT_SECRET }
+
+  // (a0) R2 cleanup sweep: delete objects whose delete_at has passed (1h after publish).
+  const nowIso = new Date().toISOString()
+  const { data: expiring, error: expErr } = await supabase
+    .from("tiktok_videos")
+    .select("id, r2_key, user_id")
+    .not("delete_at", "is", null)
+    .lt("delete_at", nowIso)
+  if (expErr) {
+    console.error(`cron: load expiring videos failed: ${expErr.message}`)
+  } else {
+    for (const v of expiring ?? []) {
+      if (!v.r2_key) continue
+      try {
+        await env.VIDEOS.delete(v.r2_key)
+        await supabase
+          .from("tiktok_videos")
+          .update({ r2_key: null, r2_url: null, delete_at: null })
+          .eq("id", v.id)
+        await supabase.from("bot_logs").insert({
+          user_id: v.user_id,
+          level: "info",
+          message: "R2 video deleted (1h retention)",
+          details: { ttVideoId: v.id },
+        })
+        console.log(`cron: deleted R2 object ${v.r2_key}`)
+      } catch (err) {
+        console.error(
+          `cron: delete R2 ${v.r2_key} failed: ${err instanceof Error ? err.message : String(err)}`,
+        )
+      }
+    }
+  }
 
   // (a) reset stuck rows: worker died mid-download more than 30 min ago
   const stuckCutoff = new Date(Date.now() - STUCK_DOWNLOADING_MS).toISOString()
@@ -50,11 +84,23 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
         },
         listVideos: async (accessToken) => {
           const list = await ttListVideos(accessToken)
-          return list.videos.map((video) => ({
-            id: video.id,
-            title: video.title,
-            duration: video.duration,
-          }))
+          const out = []
+          for (const video of list.videos) {
+            let cdnUrl: string | null = null
+            try {
+              const resolved = await resolveWatermarkFreeUrl(accessToken, video.id)
+              cdnUrl = resolved?.url ?? null
+            } catch {
+              cdnUrl = null
+            }
+            out.push({
+              id: video.id,
+              title: video.title ?? video.video_description ?? null,
+              duration: video.duration,
+              cdnUrl,
+            })
+          }
+          return out
         },
         updateAccountTokens: async (accountId, accessToken, refreshToken, expiresAt) => {
           const { error } = await supabase
@@ -85,6 +131,7 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
                 video_id: row.videoId,
                 description: row.description,
                 download_url: row.downloadUrl,
+                cdn_url: row.cdnUrl,
                 duration_ms: row.durationMs,
                 status: "new",
               })

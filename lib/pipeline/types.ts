@@ -36,12 +36,14 @@ export interface TikTokVideoRow {
   video_id: string
   description: string | null
   download_url: string | null
+  cdn_url: string | null
   fetched_at: string
   status: TikTokVideoStatus
   r2_key: string | null
   r2_url: string | null
   error: string | null
   duration_ms: number | null
+  delete_at: string | null
 }
 
 /** published_posts (platform is 'ig' | 'fb' in practice; plain text in the DB) */

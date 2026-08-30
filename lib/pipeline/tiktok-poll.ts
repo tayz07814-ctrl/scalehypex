@@ -13,7 +13,7 @@ import type { TikTokAccountRow } from "./types"
 
 export interface PollDeps {
   refreshAccessToken: (refreshToken: string) => Promise<{ accessToken: string; refreshToken: string; expiresAt: string }>
-  listVideos: (accessToken: string) => Promise<{ id: string; title: string | null; duration: number }[]> // newest-first
+  listVideos: (accessToken: string) => Promise<{ id: string; title: string | null; duration: number; cdnUrl?: string | null }[]> // newest-first
   updateAccountTokens: (accountId: string, accessToken: string, refreshToken: string, expiresAt: string) => Promise<void>
   updateAccountLastVideo: (accountId: string, lastVideoId: string) => Promise<void>
   insertVideos: (rows: {
@@ -21,6 +21,7 @@ export interface PollDeps {
     videoId: string
     description: string | null
     downloadUrl: string | null
+    cdnUrl: string | null
     durationMs: number | null
   }[]) => Promise<void>
 }
@@ -75,7 +76,7 @@ export async function pollAccountForNewVideos(deps: PollDeps, account: PollAccou
   if (videos.length === 0) return 0
 
   // (c) + (d) select the new videos
-  const newVideos: { id: string; title: string | null; duration: number }[] = []
+  const newVideos: { id: string; title: string | null; duration: number; cdnUrl?: string | null }[] = []
   if (account.last_video_id === null) {
     newVideos.push(videos[0]) // only the newest one — no first-connect backfill
   } else {
@@ -91,7 +92,8 @@ export async function pollAccountForNewVideos(deps: PollDeps, account: PollAccou
     tiktokAccountId: account.id,
     videoId: video.id,
     description: video.title,
-    downloadUrl: videoPageUrl(account.username, video.id),
+    downloadUrl: video.cdnUrl ?? videoPageUrl(account.username, video.id),
+    cdnUrl: video.cdnUrl ?? null,
     durationMs: video.duration * 1000,
   }))
 

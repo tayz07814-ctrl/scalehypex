@@ -3,6 +3,7 @@ import { createSupabaseClient, type WorkerBindings } from "./supabase"
 import { publicR2Url, videoR2Key } from "../../lib/pipeline/r2"
 import type { TikTokVideoRow } from "../../lib/pipeline/types"
 import { publishVideo } from "./publish"
+import { logBot } from "./botlog"
 
 /** Queue message shape (produced by cron.ts). */
 export interface DownloadVideoJob {
@@ -10,10 +11,44 @@ export interface DownloadVideoJob {
   videoId: string // tiktok_videos.id (uuid)
 }
 
+/** How long a published video stays in R2 before deletion (1 hour). */
+export const R2_RETENTION_MS = 60 * 60 * 1000
+
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+
 /**
- * Queue consumer (scalehypex-jobs): download the video via the yt-dlp
- * container, upload to R2, mark the row ready.
- * Failures are terminal per row (status=failed + error), then the batch acks.
+ * Fetch the mp4 bytes from a TikTok CDN URL with browser-like headers and
+ * retries (TikTok CDN can 403 or throttle without them).
+ */
+async function fetchCdnBytes(url: string): Promise<ArrayBuffer> {
+  let lastErr: unknown
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          "User-Agent": UA,
+          Referer: "https://www.tiktok.com/",
+          Accept: "video/mp4,*/*;q=0.8",
+        },
+        signal: AbortSignal.timeout(120_000),
+      })
+      if (!res.ok) throw new Error(`CDN HTTP ${res.status}`)
+      const buf = await res.arrayBuffer()
+      if (buf.byteLength === 0) throw new Error("CDN returned empty body")
+      return buf
+    } catch (err) {
+      lastErr = err
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 1500 * attempt))
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("CDN fetch failed")
+}
+
+/**
+ * Queue consumer (scalehypex-jobs): fetch the video from TikTok CDN (no
+ * watermark), upload to R2, publish to IG/FB, then schedule R2 deletion 1h
+ * after successful publish.
  */
 export async function consume(
   batch: MessageBatch<DownloadVideoJob>,
@@ -63,36 +98,20 @@ async function processDownloadJob(
     return
   }
   const userId = (account as { user_id: string }).user_id
-  if (!video.download_url) {
-    await failRow(supabase, videoId, "video row has no download_url")
+
+  // 2. source URL: prefer the resolved CDN url (cdn_url), else download_url
+  const sourceUrl = video.cdn_url ?? video.download_url
+  if (!sourceUrl) {
+    await failRow(supabase, videoId, "video row has no CDN/download URL")
     return
   }
 
-  if (!env.YTDLP) {
-    await failRow(supabase, videoId, "yt-dlp container not deployed yet (YTDLP binding missing)")
-    return
-  }
+  await logBot(supabase, userId, "info", "Fetching video from TikTok CDN", {
+    ttVideoId: video.video_id,
+  })
 
-  // 2. download via the yt-dlp container (image entrypoint is `yt-dlp`).
-  //    `-o -` streams the raw mp4 to stdout — the typed Container API
-  //    (this wrangler version) has no temp-file read method, so stdout is
-  //    the transport. yt-dlp's own logs go to stderr.
-  const proc = await env.YTDLP.exec(
-    ["-f", "best", "-o", "-", "--no-playlist", "--force-overwrites", video.download_url],
-    { signal: AbortSignal.timeout(120_000) },
-  )
-  const output = await proc.output()
-  if (output.exitCode !== 0) {
-    await failRow(supabase, videoId, new TextDecoder().decode(output.stderr).slice(-500))
-    return
-  }
-
-  // 3. mp4 bytes came back on stdout
-  const bytes = output.stdout
-  if (bytes.byteLength === 0) {
-    await failRow(supabase, videoId, "yt-dlp produced no output on stdout")
-    return
-  }
+  // 3. fetch the mp4 bytes (browser headers + retries)
+  const bytes = await fetchCdnBytes(sourceUrl)
 
   // 4. upload to R2
   const key = videoR2Key(userId, video.video_id)
@@ -106,6 +125,10 @@ async function processDownloadJob(
     .eq("id", videoId)
   if (error) throw new Error(`mark ready failed: ${error.message}`)
 
+  await logBot(supabase, userId, "success", "Video downloaded to R2", {
+    ttVideoId: video.video_id,
+  })
+
   // 6. activity log (powers the dashboard feed)
   const { error: logError } = await supabase.from("activity_log").insert({
     user_id: userId,
@@ -115,13 +138,31 @@ async function processDownloadJob(
   if (logError) throw new Error(`activity_log insert failed: ${logError.message}`)
 
   // 7. Phase 6: auto-publish to IG/FB (row is ready + public URL set).
-  //    Never let a publish bug fail an already-downloaded row.
-  try {
-    await publishVideo(supabase, userId, video, url)
-  } catch (err) {
-    console.error(
-      `consumer: publish failed for ${videoId}: ${err instanceof Error ? err.message : String(err)}`,
-    )
+  //    publishVideo returns { published, failed } counts.
+  const result = await publishVideo(supabase, userId, video, url)
+
+  // 8. Schedule R2 deletion 1 hour after successful publish.
+  //    Meta's IG/FB APIs fetch the public R2 URL during processing, so we
+  //    only delete after publish completes. We store a delete_at timestamp
+  //    and let the cron sweep it (see cron.ts) — robust against worker restarts.
+  if (result.published > 0) {
+    const deleteAt = new Date(Date.now() + R2_RETENTION_MS).toISOString()
+    const { error: delErr } = await supabase
+      .from("tiktok_videos")
+      .update({ delete_at: deleteAt })
+      .eq("id", videoId)
+    if (delErr) console.error(`consumer: schedule delete failed: ${delErr.message}`)
+    await logBot(supabase, userId, "info", "Video published — R2 cleanup scheduled in 1h", {
+      ttVideoId: video.video_id,
+      published: result.published,
+      failed: result.failed,
+    })
+  } else {
+    await logBot(supabase, userId, "warn", "Publish skipped or failed — keeping R2 copy", {
+      ttVideoId: video.video_id,
+      published: result.published,
+      failed: result.failed,
+    })
   }
 }
 
