@@ -50,9 +50,11 @@ async function parseTikTokResponse<T>(res: Response): Promise<T> {
       `TikTok API returned a non-JSON response (status ${res.status})`,
     )
   }
-  if (!res.ok) {
-    const envelope = body as TikTokErrorEnvelope
-    const err = envelope.error
+  // TikTok returns HTTP 200 even on API errors (e.g. invalid_grant), with the
+  // error in the JSON body. Treat that as an error, not a success.
+  const envelope = body as TikTokErrorEnvelope
+  if (!res.ok || envelope?.error) {
+    const err = envelope?.error
     throw new TikTokApiError(
       res.status,
       err?.code ?? "unknown",
