@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
@@ -19,8 +22,12 @@ export function DashboardHeader({
   email: string
   active: (typeof NAV_ITEMS)[number]["href"]
 }) {
+  const pathname = usePathname()
+  const current =
+    (pathname as (typeof NAV_ITEMS)[number]["href"] | null) ?? active
+
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/70 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
         <Logo href="/dashboard" />
         <nav aria-label="Dashboard" className="flex items-center gap-1">
@@ -28,12 +35,13 @@ export function DashboardHeader({
             <Link
               key={item.href}
               href={item.href}
-              aria-current={active === item.href ? "page" : undefined}
+              prefetch
+              aria-current={current === item.href ? "page" : undefined}
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
-                active === item.href
-                  ? "bg-gradient-to-r from-violet-500/90 to-fuchsia-500/90 text-white shadow-lg shadow-fuchsia-500/25"
-                  : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                current === item.href
+                  ? "bg-gradient-to-r from-[#25f4ee] to-[#fe2c55] text-white shadow-lg shadow-rose-500/25"
+                  : "text-muted-foreground hover:bg-slate-100 hover:text-foreground"
               )}
             >
               {item.label}

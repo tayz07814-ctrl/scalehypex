@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -75,13 +76,13 @@ export default async function DashboardPage() {
   // UI-safe columns only — tokens never leave the DB.
   const { data: tiktokAccount } = await supabase
     .from("tiktok_accounts")
-    .select("username, created_at")
+    .select("username, avatar_url, created_at")
     .eq("user_id", user.id)
     .maybeSingle()
 
   const { data: metaAccounts } = await supabase
     .from("meta_accounts")
-    .select("id, page_name, ig_username, created_at")
+    .select("id, fb_page_id, page_name, ig_username, ig_picture_url, created_at")
     .eq("user_id", user.id)
 
   const { count: videoCount } = await supabase
@@ -160,12 +161,21 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               {tiktokAccount ? (
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar>
+                      <AvatarImage
+                        src={tiktokAccount.avatar_url ?? undefined}
+                        alt={tiktokAccount.username ?? "TikTok account"}
+                      />
+                      <AvatarFallback>
+                        {(tiktokAccount.username ?? "T").charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="font-medium">
                       {tiktokAccount.username ?? "TikTok account"}
                     </span>
-                    <Badge className="bg-emerald-500/15 text-emerald-300">
+                    <Badge className="bg-emerald-500/15 text-emerald-600">
                       Connected
                     </Badge>
                   </div>
@@ -210,19 +220,43 @@ export default async function DashboardPage() {
               {metaAccounts && metaAccounts.length > 0 ? (
                 <div className="flex flex-col gap-3">
                   {metaAccounts.map((account) => (
-                    <div key={account.id} className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
+                    <div key={account.id} className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar>
+                          <AvatarImage
+                            src={
+                              account.fb_page_id
+                                ? `https://graph.facebook.com/${account.fb_page_id}/picture?type=normal`
+                                : undefined
+                            }
+                            alt={account.page_name ?? "Facebook Page"}
+                          />
+                          <AvatarFallback>
+                            {(account.page_name ?? "F").charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <span className="font-medium">
                           {account.page_name ?? "Facebook Page"}
                         </span>
-                        <Badge className="bg-emerald-500/15 text-emerald-300">
+                        <Badge className="bg-emerald-500/15 text-emerald-600">
                           Connected
                         </Badge>
                       </div>
                       {account.ig_username ? (
-                        <p className="text-sm text-muted-foreground">
-                          Instagram: {account.ig_username}
-                        </p>
+                        <div className="flex items-center gap-2.5 pl-1">
+                          <Avatar size="sm">
+                            <AvatarImage
+                              src={account.ig_picture_url ?? undefined}
+                              alt={account.ig_username}
+                            />
+                            <AvatarFallback>
+                              {account.ig_username.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm text-muted-foreground">
+                            @{account.ig_username}
+                          </span>
+                        </div>
                       ) : null}
                     </div>
                   ))}

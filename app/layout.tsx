@@ -32,7 +32,7 @@ function AuroraBackground() {
           left: "-8%",
           width: "44rem",
           height: "44rem",
-          background: "rgb(124 58 237 / 0.55)",
+          background: "rgb(37 244 238 / 0.15)",
         }}
       />
       <div
@@ -42,7 +42,7 @@ function AuroraBackground() {
           right: "-12%",
           width: "38rem",
           height: "38rem",
-          background: "rgb(217 70 239 / 0.42)",
+          background: "rgb(236 72 153 / 0.12)",
         }}
       />
       <div
@@ -52,7 +52,7 @@ function AuroraBackground() {
           left: "20%",
           width: "42rem",
           height: "42rem",
-          background: "rgb(34 211 238 / 0.3)",
+          background: "rgb(24 119 242 / 0.12)",
           animationDelay: "-9s",
         }}
       />
@@ -65,7 +65,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuroraBackground />

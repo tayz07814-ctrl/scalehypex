@@ -55,7 +55,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #fe2c55;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -130,7 +130,7 @@
     scroll-behavior: smooth;
   }
   ::selection {
-    background: rgb(217 70 239 / 35%);
+    background: rgb(254 44 85 / 20%);
   }
   ::-webkit-scrollbar {
     width: 10px;
@@ -140,16 +140,16 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.4 0.1 300 / 60%);
+    background: oklch(0.87 0 0);
     border-radius: 8px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.5 0.15 300 / 70%);
+    background: oklch(0.78 0 0);
   }
 }
 
 /* ------------------------------------------------------------------ */
-/* ScaleHypex vibrant theme — aurora, glass, glow, motion              */
+/* ScaleHypex light brand theme — aurora, glass, glow, motion          */
 /* ------------------------------------------------------------------ */
 
 @keyframes aurora {
@@ -217,17 +217,17 @@
   background:
     radial-gradient(
       ellipse 80% 55% at 50% -12%,
-      oklch(0.32 0.18 300 / 45%),
+      rgb(37 244 238 / 0.12),
       transparent 62%
     ),
     radial-gradient(
       ellipse 60% 45% at 88% 112%,
-      oklch(0.3 0.16 330 / 40%),
+      rgb(254 44 85 / 0.1),
       transparent 65%
     ),
     radial-gradient(
       ellipse 50% 40% at 4% 78%,
-      oklch(0.28 0.14 210 / 30%),
+      rgb(24 119 242 / 0.1),
       transparent 60%
     );
 }
@@ -258,8 +258,8 @@
 
 .bg-grid {
   background-image:
-    linear-gradient(to right, oklch(1 0 0 / 4%) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(1 0 0 / 4%) 1px, transparent 1px);
+    linear-gradient(to right, rgb(226 232 240 / 80%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(226 232 240 / 80%) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(
     ellipse 90% 65% at 50% 0%,
@@ -271,10 +271,10 @@
 .text-gradient {
   background-image: linear-gradient(
     100deg,
-    #c084fc,
-    #f472b6 35%,
-    #fb923c 65%,
-    #c084fc
+    #06b6d4,
+    #2563eb 35%,
+    #dd2a7b 65%,
+    #f58529
   );
   background-size: 220% 100%;
   background-clip: text;
@@ -284,8 +284,8 @@
 }
 
 .glass {
-  background: oklch(1 0 0 / 5%);
-  border: 1px solid oklch(1 0 0 / 10%);
+  background: rgb(255 255 255 / 0.75);
+  border: 1px solid rgb(226 232 240 / 90%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -293,10 +293,10 @@
 .glass-card {
   background: linear-gradient(
     160deg,
-    oklch(1 0 0 / 9%),
-    oklch(1 0 0 / 3%)
+    rgb(255 255 255 / 95%),
+    rgb(248 250 252 / 80%)
   );
-  border: 1px solid oklch(1 0 0 / 10%);
+  border: 1px solid rgb(226 232 240 / 90%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -310,21 +310,21 @@
 
 .card-lift:hover {
   transform: translateY(-4px);
-  border-color: oklch(1 0 0 / 22%);
-  box-shadow: 0 24px 60px -24px rgb(168 85 247 / 50%);
+  border-color: rgb(254 44 85 / 35%);
+  box-shadow: 0 24px 60px -24px rgb(254 44 85 / 30%);
 }
 
 .btn-hero {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background-image: linear-gradient(100deg, #7c3aed, #d946ef 55%, #fb7185);
+  background-image: linear-gradient(100deg, #25f4ee, #1877f2 45%, #fe2c55 85%);
   background-size: 180% 100%;
   color: white;
   border-color: transparent;
   box-shadow:
-    0 0 32px -8px rgb(217 70 239 / 70%),
-    inset 0 1px 0 rgb(255 255 255 / 18%);
+    0 0 32px -8px rgb(254 44 85 / 55%),
+    inset 0 1px 0 rgb(255 255 255 / 25%);
   transition:
     background-position 0.45s ease,
     transform 0.2s ease,
@@ -335,8 +335,8 @@
   background-position: 100% 0;
   transform: translateY(-1px);
   box-shadow:
-    0 0 48px -6px rgb(217 70 239 / 85%),
-    inset 0 1px 0 rgb(255 255 255 / 18%);
+    0 0 48px -6px rgb(37 244 238 / 50%),
+    inset 0 1px 0 rgb(255 255 255 / 25%);
 }
 
 .btn-hero:disabled {
@@ -365,7 +365,14 @@
 .gradient-panel {
   border-radius: 1.5rem;
   padding: 1px;
-  background: linear-gradient(120deg, #7c3aed, #d946ef, #fb923c, #7c3aed);
+  background: linear-gradient(
+    120deg,
+    #25f4ee,
+    #1877f2,
+    #fe2c55,
+    #f58529,
+    #25f4ee
+  );
   background-size: 300% 100%;
   animation: gradient-pan 6s linear infinite;
 }

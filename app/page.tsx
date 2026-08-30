@@ -26,12 +26,12 @@ const STEP_HUES: Hue[] = [
     glow: "shadow-cyan-500/30",
   },
   {
-    chip: "from-violet-500 to-indigo-500",
-    glow: "shadow-violet-500/30",
+    chip: "from-rose-500 to-orange-400",
+    glow: "shadow-rose-500/30",
   },
   {
-    chip: "from-fuchsia-500 to-pink-500",
-    glow: "shadow-fuchsia-500/30",
+    chip: "from-blue-500 to-indigo-500",
+    glow: "shadow-blue-500/30",
   },
 ]
 
@@ -55,11 +55,14 @@ const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
 
 const FEATURE_HUES: Hue[] = [
   { chip: "from-cyan-400 to-blue-500", glow: "shadow-cyan-500/30" },
-  { chip: "from-fuchsia-500 to-pink-500", glow: "shadow-fuchsia-500/30" },
+  { chip: "from-rose-500 to-orange-400", glow: "shadow-rose-500/30" },
   { chip: "from-blue-500 to-indigo-500", glow: "shadow-blue-500/30" },
+  {
+    chip: "from-amber-400 via-[#dd2a7b] to-purple-600",
+    glow: "shadow-rose-500/30",
+  },
   { chip: "from-emerald-400 to-teal-500", glow: "shadow-emerald-500/30" },
-  { chip: "from-amber-400 to-orange-500", glow: "shadow-amber-500/30" },
-  { chip: "from-violet-500 to-purple-500", glow: "shadow-violet-500/30" },
+  { chip: "from-rose-400 to-pink-500", glow: "shadow-rose-500/30" },
 ]
 
 const FEATURES: { icon: LucideIcon; title: string; text: string }[] = [
@@ -117,12 +120,12 @@ function MiniStat({
   return (
     <div
       className={cn(
-        "rounded-xl border border-white/10 bg-gradient-to-b p-3 text-left",
+        "rounded-xl border border-slate-200 bg-gradient-to-b p-3 text-left",
         hue
       )}
     >
       <p className="text-[11px] text-muted-foreground">{label}</p>
-      <p className="mt-0.5 text-xl font-bold text-white">{value}</p>
+      <p className="mt-0.5 text-xl font-bold text-slate-900">{value}</p>
     </div>
   )
 }
@@ -137,7 +140,7 @@ function FakeRow({
   time: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2.5">
+    <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white/70 px-3 py-2.5">
       <span className={cn("size-2 shrink-0 rounded-full", dot)} />
       <span className="min-w-0 flex-1 truncate text-left text-xs text-foreground/90">
         {title}
@@ -158,11 +161,29 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-      <span className="glass rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest text-fuchsia-300 uppercase">
+      <span className="glass rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest text-cyan-600 uppercase">
         {eyebrow}
       </span>
       <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
       {sub ? <p className="text-muted-foreground">{sub}</p> : null}
+    </div>
+  )
+}
+
+function BrandPills() {
+  return (
+    <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+      <span className="rounded-full bg-[#25f4ee]/15 px-3 py-1 text-xs font-semibold text-cyan-700">
+        TikTok
+      </span>
+      <span className="rounded-full bg-pink-500/10 px-3 py-1 text-xs font-semibold">
+        <span className="bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] bg-clip-text text-transparent">
+          Instagram
+        </span>
+      </span>
+      <span className="rounded-full bg-[#1877f2]/15 px-3 py-1 text-xs font-semibold text-blue-700">
+        Facebook
+      </span>
     </div>
   )
 }
@@ -180,13 +201,13 @@ export default function Home() {
           >
             <a
               href="#how"
-              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"
             >
               How it works
             </a>
             <a
               href="#features"
-              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground"
             >
               Features
             </a>
@@ -214,13 +235,14 @@ export default function Home() {
       {/* Hero */}
       <section className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-6 pt-16 pb-20 text-center sm:pt-24">
         <Reveal>
-          <span className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-medium text-fuchsia-200">
+          <span className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-medium text-slate-600">
             <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-fuchsia-400 opacity-75" />
-              <span className="relative inline-flex size-2 rounded-full bg-fuchsia-500" />
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#25f4ee] opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#25f4ee]" />
             </span>
             TikTok → Instagram Reels + Facebook — on autopilot
           </span>
+          <BrandPills />
         </Reveal>
 
         <Reveal delay={100}>
@@ -273,7 +295,7 @@ export default function Home() {
         {/* App preview mockup */}
         <Reveal delay={250} className="mt-16 w-full max-w-3xl">
           <div className="glass-card card-lift relative rounded-3xl p-3">
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <div className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full bg-rose-500/80" />
                 <span className="size-2.5 rounded-full bg-amber-400/80" />
@@ -286,17 +308,17 @@ export default function Home() {
                 <MiniStat
                   label="Videos tracked"
                   value="128"
-                  hue="from-violet-500/25 to-violet-500/5"
+                  hue="from-cyan-500/10 to-cyan-500/5"
                 />
                 <MiniStat
                   label="Published"
                   value="121"
-                  hue="from-emerald-500/25 to-emerald-500/5"
+                  hue="from-emerald-500/10 to-emerald-500/5"
                 />
                 <MiniStat
                   label="Replies sent"
                   value="342"
-                  hue="from-fuchsia-500/25 to-fuchsia-500/5"
+                  hue="from-rose-500/10 to-rose-500/5"
                 />
               </div>
               <div className="mt-4 flex flex-col gap-2">
@@ -311,25 +333,25 @@ export default function Home() {
                   time="21m ago"
                 />
                 <FakeRow
-                  dot="bg-fuchsia-400"
+                  dot="bg-rose-400"
                   title="Auto-reply sent · @yourpage"
                   time="1h ago"
                 />
               </div>
             </div>
-            <div className="glass animate-float absolute -top-5 -right-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-fuchsia-500/20">
-              <RocketIcon className="size-3.5 text-emerald-400" />
+            <div className="glass animate-float absolute -top-5 -right-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-rose-500/15">
+              <RocketIcon className="size-3.5 text-emerald-500" />
               Reel published
             </div>
-            <div className="glass animate-float-slow absolute -bottom-5 -left-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-cyan-500/20">
-              <MessageSquareTextIcon className="size-3.5 text-cyan-400" />
+            <div className="glass animate-float-slow absolute -bottom-5 -left-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-cyan-500/15">
+              <MessageSquareTextIcon className="size-3.5 text-cyan-600" />
               Comment auto-replied
             </div>
             <div
-              className="glass animate-float absolute -top-5 -left-4 hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-violet-500/20 sm:flex"
+              className="glass animate-float absolute -top-5 -left-4 hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-blue-500/15 sm:flex"
               style={{ animationDelay: "-3s" }}
             >
-              <DownloadIcon className="size-3.5 text-violet-400" />
+              <DownloadIcon className="size-3.5 text-blue-600" />
               Watermark removed
             </div>
           </div>
@@ -337,14 +359,14 @@ export default function Home() {
       </section>
 
       {/* Marquee */}
-      <section className="marquee border-y border-white/10 bg-white/[0.02] py-4">
+      <section className="marquee border-y border-slate-200 bg-slate-50/70 py-4">
         <div className="marquee-track items-center">
           {[...MARQUEE, ...MARQUEE].map((item, i) => (
             <span
               key={`${item.label}-${i}`}
               className="mx-5 flex items-center gap-2 text-sm whitespace-nowrap text-muted-foreground"
             >
-              <item.icon className="size-4 text-fuchsia-400" />
+              <item.icon className="size-4 text-rose-500" />
               {item.label}
             </span>
           ))}
@@ -370,7 +392,7 @@ export default function Home() {
           {STEPS.map((step, i) => (
             <Reveal key={step.title} delay={i * 120} className="h-full">
               <div className="glass-card card-lift relative h-full overflow-hidden rounded-2xl p-6">
-                <span className="absolute -top-5 -right-2 text-8xl font-black text-white/5">
+                <span className="absolute -top-5 -right-2 text-8xl font-black text-slate-200">
                   {i + 1}
                 </span>
                 <div
@@ -395,7 +417,7 @@ export default function Home() {
       {/* Features */}
       <section
         id="features"
-        className="border-t border-white/5 bg-white/[0.015]"
+        className="border-t border-slate-200 bg-slate-50/40"
       >
         <div className="mx-auto w-full max-w-6xl px-6 py-24">
           <Reveal>
@@ -437,7 +459,7 @@ export default function Home() {
       {/* Stats band */}
       <section className="mx-auto w-full max-w-6xl px-6 pt-24">
         <Reveal>
-          <div className="glass-card grid grid-cols-1 divide-y divide-white/10 rounded-3xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="glass-card grid grid-cols-1 divide-y divide-slate-200 rounded-3xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
               { value: "24/7", label: "Watching for new TikToks" },
               { value: "0", label: "Watermarks, ever" },
@@ -463,25 +485,19 @@ export default function Home() {
       <section className="mx-auto w-full max-w-6xl px-6 py-24">
         <Reveal>
           <div className="gradient-panel">
-            <div
-              className="relative overflow-hidden rounded-[calc(1.5rem-1px)] px-6 py-16 text-center"
-              style={{
-                background:
-                  "linear-gradient(160deg, oklch(0.17 0.05 295), oklch(0.14 0.04 290))",
-              }}
-            >
+            <div className="relative overflow-hidden rounded-[calc(1.5rem-1px)] bg-white px-6 py-16 text-center">
               <div
                 aria-hidden
                 className="orb animate-aurora absolute -top-16 left-1/4 size-64"
-                style={{ background: "rgb(217 70 239 / 0.35)" }}
+                style={{ background: "rgb(37 244 238 / 0.18)" }}
               />
               <div
                 aria-hidden
                 className="orb animate-aurora-slow absolute -bottom-20 right-1/5 size-64"
-                style={{ background: "rgb(124 58 237 / 0.4)" }}
+                style={{ background: "rgb(254 44 85 / 0.14)" }}
               />
               <div className="relative">
-                <SparklesIcon className="mx-auto size-8 text-fuchsia-400" />
+                <SparklesIcon className="mx-auto size-8 text-rose-500" />
                 <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
                   Ready to scale your reach?
                 </h2>
@@ -505,7 +521,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10">
+      <footer className="border-t border-slate-200">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-6 py-6 text-xs text-muted-foreground">
           <Logo />
           <span>Not affiliated with TikTok, Instagram, or Meta.</span>

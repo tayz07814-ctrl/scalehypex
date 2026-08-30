@@ -5,7 +5,11 @@ import { runCommentBot } from "./comments"
 import { serveR2Object } from "./serve"
 
 export default {
-  async fetch(request: Request, env: WorkerBindings): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: WorkerBindings,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
     const url = new URL(request.url)
     // Public video endpoint: GET /v/{userId}/{ttVideoId}/video.mp4 (R2 + Range)
     if (url.pathname.startsWith("/v/") && request.method === "GET") {
@@ -17,6 +21,34 @@ export default {
         })
       }
       return serveR2Object(env, key, request)
+    }
+    // Manual bot trigger: POST /run with x-run-secret (dashboard "Run bot now").
+    if (url.pathname === "/run" && request.method === "POST") {
+      const secret = request.headers.get("x-run-secret")
+      if (!secret || secret !== env.RUN_SECRET) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "unauthorized" }),
+          { status: 401, headers: { "content-type": "application/json" } },
+        )
+      }
+      ctx.waitUntil(
+        (async () => {
+          try {
+            await runCron(env, ctx)
+          } catch (e) {
+            console.error("run: cron failed", e)
+          }
+          try {
+            await runCommentBot(env)
+          } catch (e) {
+            console.error("run: comments failed", e)
+          }
+        })(),
+      )
+      return new Response(
+        JSON.stringify({ ok: true, startedAt: new Date().toISOString() }),
+        { headers: { "content-type": "application/json" } },
+      )
     }
     return new Response(JSON.stringify({ ok: true, service: "scalehypex-worker" }), {
       headers: { "content-type": "application/json" },
