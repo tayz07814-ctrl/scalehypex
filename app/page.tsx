@@ -360,7 +360,7 @@ export default function Home() {
       </section>
 
       {/* Marquee */}
-      <section className="marquee border-y border-[#F6E9DF] bg-[#FFF5EC]/70 py-4">
+      <section className="marquee glass border-y border-[var(--glass-border)] bg-card/50 py-4">
         <div className="marquee-track items-center">
           {[...MARQUEE, ...MARQUEE].map((item, i) => (
             <span
@@ -418,7 +418,7 @@ export default function Home() {
       {/* Features */}
       <section
         id="features"
-        className="border-t border-[#F6E9DF] bg-[#FFF5EC]/50"
+        className="border-t border-[var(--glass-border)] bg-card/40 backdrop-blur-sm"
       >
         <div className="mx-auto w-full max-w-6xl px-6 py-24">
           <Reveal>
@@ -522,7 +522,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#F6E9DF]">
+      <footer className="border-t border-[var(--glass-border)]">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-6 py-6 text-xs text-muted-foreground">
           <Logo />
           <span>Not affiliated with TikTok, Instagram, or Meta.</span>
