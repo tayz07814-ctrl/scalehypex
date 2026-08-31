@@ -486,7 +486,7 @@ export default function Home() {
       <section className="mx-auto w-full max-w-6xl px-6 py-24">
         <Reveal>
           <div className="gradient-panel">
-            <div className="relative overflow-hidden rounded-[calc(1.5rem-1px)] bg-white px-6 py-16 text-center">
+            <div className="relative overflow-hidden rounded-[calc(1.5rem-1px)] bg-card px-6 py-16 text-center text-card-foreground">
               <div
                 aria-hidden
                 className="orb animate-aurora absolute -top-16 left-1/4 size-64"
