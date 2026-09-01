@@ -26,10 +26,10 @@ const UA =
  * Cloudflare egress; the paid api.tikwmapi.com endpoint is key-authenticated).
  */
 async function downloadViaTikwm(pageUrl: string, apiKey: string | undefined): Promise<ArrayBuffer> {
+  if (!apiKey) throw new Error("tikwm: missing TIKWM_API_KEY")
   let lastErr: unknown
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      if (!apiKey) throw new Error("tikwm: missing TIKWM_API_KEY")
       const api = `https://api.tikwmapi.com/?url=${encodeURIComponent(pageUrl)}&hd=1`
       const res = await fetch(api, {
         headers: {
@@ -39,6 +39,7 @@ async function downloadViaTikwm(pageUrl: string, apiKey: string | undefined): Pr
         },
         signal: AbortSignal.timeout(30_000),
       })
+      if (!res.ok) throw new Error(`tikwm: HTTP ${res.status} ${res.statusText}`)
       const body = (await res.json()) as {
         code?: number
         msg?: string
@@ -114,13 +115,12 @@ async function processDownloadJob(
   }
   const video = row as TikTokVideoRow
 
-  // Idempotency guard: a queue message can be redelivered (at-least-once).
-  // If this video already reached a terminal/downloaded state, do NOT
-  // download it again - never duplicate work.
-  if (video.status === "ready" || video.status === "published" || video.status === "failed") {
-    console.log(`consumer: video ${videoId} already ${video.status} - skipping duplicate`)
+  // Idempotency guard: skip rows that already permanently failed.
+  if (video.status === "failed") {
+    console.log(`consumer: video ${videoId} already failed - skipping`)
     return
   }
+
   const { data: account } = await supabase
     .from("tiktok_accounts")
     .select("user_id")
@@ -131,6 +131,19 @@ async function processDownloadJob(
     return
   }
   const userId = (account as { user_id: string }).user_id
+
+  // Resume path: if the video was already downloaded (ready or published),
+  // skip straight to publish. publishVideo is per-platform idempotent via
+  // alreadyPublished (checks published_posts for non-failed rows), so this
+  // safely recovers from crashes mid-publish and retries partial failures.
+  if (video.status === "ready" || video.status === "published") {
+    if (!video.r2_url) {
+      await failRow(supabase, videoId, `${video.status} row has no r2_url`)
+      return
+    }
+    await doPublish(supabase, userId, video, video.r2_url)
+    return
+  }
 
   // 2. source = the TikTok video page URL; resolved via a third-party
   //    downloader API (tikwm) — direct CDN fetch hits Akamai 403 and CF
@@ -172,19 +185,22 @@ async function processDownloadJob(
   if (logError) throw new Error(`activity_log insert failed: ${logError.message}`)
 
   // 7. Phase 6: auto-publish to IG/FB (row is ready + public URL set).
-  //    publishVideo returns { published, failed } counts.
-  const result = await publishVideo(supabase, userId, video, url)
+  await doPublish(supabase, userId, video, url)
+}
 
-  // 8. Schedule R2 deletion 1 hour after successful publish.
-  //    Meta's IG/FB APIs fetch the public R2 URL during processing, so we
-  //    only delete after publish completes. We store a delete_at timestamp
-  //    and let the cron sweep it (see cron.ts) — robust against worker restarts.
+async function doPublish(
+  supabase: SupabaseClient,
+  userId: string,
+  video: TikTokVideoRow,
+  url: string,
+): Promise<void> {
+  const result = await publishVideo(supabase, userId, video, url)
   if (result.published > 0) {
     const deleteAt = new Date(Date.now() + R2_RETENTION_MS).toISOString()
     const { error: delErr } = await supabase
       .from("tiktok_videos")
       .update({ delete_at: deleteAt })
-      .eq("id", videoId)
+      .eq("id", video.id)
     if (delErr) console.error(`consumer: schedule delete failed: ${delErr.message}`)
     await logBot(supabase, userId, "info", "Video published — R2 cleanup scheduled in 1h", {
       ttVideoId: video.video_id,

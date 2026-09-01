@@ -151,43 +151,41 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
         { added, detected: newRows.map((r) => r.ttVideoId) },
       )
 
-      // after insertion: if the owner auto-publishes, start downloading now
-      if (newRows.length > 0) {
-        const { data: settings } = await supabase
-          .from("bot_settings")
-          .select("auto_publish")
-          .eq("user_id", account.user_id)
-          .maybeSingle()
-        if (settings?.auto_publish === true) {
-          for (const row of newRows) {
-            const { error } = await supabase
-              .from("tiktok_videos")
-              .update({ status: "downloading" })
-              .eq("id", row.rowId)
-            if (error) throw new Error(`mark downloading failed: ${error.message}`)
-            await env.JOBS.send({ type: "download_video", videoId: row.rowId })
-            await logBot(supabase, account.user_id, "info", `Enqueued download for video ${row.ttVideoId}`, {
-              ttVideoId: row.ttVideoId,
-            })
-          }
+      // after insertion: fetch auto_publish setting once for this account
+      const { data: settings } = await supabase
+        .from("bot_settings")
+        .select("auto_publish")
+        .eq("user_id", account.user_id)
+        .maybeSingle()
+      const autoPublish = settings?.auto_publish === true
+
+      // enqueue newly detected videos
+      if (newRows.length > 0 && autoPublish) {
+        for (const row of newRows) {
+          const { error } = await supabase
+            .from("tiktok_videos")
+            .update({ status: "downloading" })
+            .eq("id", row.rowId)
+          if (error) throw new Error(`mark downloading failed: ${error.message}`)
+          await env.JOBS.send({ type: "download_video", videoId: row.rowId })
+          await logBot(supabase, account.user_id, "info", `Enqueued download for video ${row.ttVideoId}`, {
+            ttVideoId: row.ttVideoId,
+          })
         }
       }
 
-      // Catch-up: enqueue rows still stuck in `new` from before auto-publish
-      // was enabled (they were inserted in an earlier pass, so newRows above
-      // won't include them and the poller cursor has already passed them).
-      {
-        const { data: settings } = await supabase
-          .from("bot_settings")
-          .select("auto_publish")
-          .eq("user_id", account.user_id)
-          .maybeSingle()
-        if (settings?.auto_publish === true) {
-          const { data: pending } = await supabase
-            .from("tiktok_videos")
-            .select("id, video_id")
-            .eq("tiktok_account_id", account.id)
-            .eq("status", "new")
+      // Catch-up: rows stuck in non-terminal states (inserted before
+      // auto-publish was enabled, or orphaned by a worker crash).
+      if (autoPublish) {
+        // (i) new rows: inserted but never enqueued
+        const { data: pending, error: pendingErr } = await supabase
+          .from("tiktok_videos")
+          .select("id, video_id")
+          .eq("tiktok_account_id", account.id)
+          .eq("status", "new")
+        if (pendingErr) {
+          console.error(`cron: catch-up new select failed: ${pendingErr.message}`)
+        } else {
           for (const row of pending ?? []) {
             const { error } = await supabase
               .from("tiktok_videos")
@@ -198,6 +196,49 @@ export async function runCron(env: WorkerBindings, _ctx: ExecutionContext): Prom
             await logBot(supabase, account.user_id, "info", `Enqueued catch-up download for video ${row.video_id}`, {
               ttVideoId: row.video_id,
             })
+          }
+        }
+
+        // (ii) ready rows: downloaded but publish never completed (crash)
+        const { data: ready, error: readyErr } = await supabase
+          .from("tiktok_videos")
+          .select("id, video_id")
+          .eq("tiktok_account_id", account.id)
+          .eq("status", "ready")
+        if (readyErr) {
+          console.error(`cron: catch-up ready select failed: ${readyErr.message}`)
+        } else {
+          for (const row of ready ?? []) {
+            await env.JOBS.send({ type: "download_video", videoId: row.id })
+            await logBot(supabase, account.user_id, "info", `Enqueued publish retry for ready video ${row.video_id}`, {
+              ttVideoId: row.video_id,
+            })
+          }
+        }
+
+        // (iii) published rows with failed published_posts (partial failure)
+        const { data: published, error: pubErr } = await supabase
+          .from("tiktok_videos")
+          .select("id, video_id")
+          .eq("tiktok_account_id", account.id)
+          .eq("status", "published")
+        if (pubErr) {
+          console.error(`cron: catch-up published select failed: ${pubErr.message}`)
+        } else if (published && published.length > 0) {
+          const videoIds = published.map((v) => v.id)
+          const { data: failedPosts } = await supabase
+            .from("published_posts")
+            .select("tiktok_video_id")
+            .in("tiktok_video_id", videoIds)
+            .eq("status", "failed")
+          if (failedPosts && failedPosts.length > 0) {
+            const uniqueIds = [...new Set(failedPosts.map((p) => p.tiktok_video_id))]
+            for (const id of uniqueIds) {
+              await env.JOBS.send({ type: "download_video", videoId: id })
+              await logBot(supabase, account.user_id, "info", "Enqueued publish retry for partially-failed video", {
+                ttVideoId: id,
+              })
+            }
           }
         }
       }

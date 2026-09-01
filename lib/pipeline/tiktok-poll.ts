@@ -33,10 +33,9 @@ export type PollAccount = Pick<
 >
 
 /** Public TikTok page URL for a video (the URL yt-dlp downloads from). */
-export function videoPageUrl(username: string | null, videoId: string): string {
-  return username
-    ? `https://www.tiktok.com/@${username}/video/${videoId}`
-    : `https://www.tiktok.com/video/${videoId}`
+export function videoPageUrl(username: string | null, videoId: string): string | null {
+  if (!username) return null
+  return `https://www.tiktok.com/@${username}/video/${videoId}`
 }
 
 /** Refresh window: refresh the access token within 1 hour of expiry. */

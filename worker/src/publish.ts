@@ -72,7 +72,7 @@ async function alreadyPublished(
     .eq("tiktok_video_id", video.id)
     .eq("meta_account_id", metaAccountId)
     .eq("platform", platform)
-    .eq("status", "published")
+    .neq("status", "failed")
     .maybeSingle()
   return data != null
 }
