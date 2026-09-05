@@ -3,8 +3,16 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 export const runtime = "nodejs"
 
-const META_SCOPES =
-  "basic,pages_show_list,pages_read,pages_manage_posts,instagram_basic,instagram_content_publish,pages_read_engagement,instagram_comment_publish"
+const META_SCOPES = [
+  "public_profile",
+  "pages_show_list",
+  "pages_read_engagement",
+  "pages_manage_posts",
+  "instagram_basic",
+  "instagram_content_publish",
+  "instagram_manage_comments",
+  "business_management",
+].join(",")
 const STATE_COOKIE = "meta_oauth_state"
 const STATE_MAX_AGE_SECONDS = 10 * 60
 
