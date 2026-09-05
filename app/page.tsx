@@ -8,7 +8,6 @@ import {
   Music2Icon,
   RocketIcon,
   ShieldCheckIcon,
-  SparklesIcon,
   TimerIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -24,16 +23,16 @@ type Hue = { chip: string; glow: string }
 
 const STEP_HUES: Hue[] = [
   {
-    chip: "from-[#25F4EE] to-[#2DD4BF]",
-    glow: "shadow-[#25F4EE]/40",
+    chip: "from-[#00F2FE] to-[#25F4EE]",
+    glow: "shadow-[#00F2FE]/30",
   },
   {
-    chip: "from-[#DCC9FF] to-[#A78BFA]",
-    glow: "shadow-[#A78BFA]/40",
+    chip: "from-[#8B5CF6] to-[#6366F1]",
+    glow: "shadow-[#8B5CF6]/30",
   },
   {
-    chip: "from-[#DD2A7B] to-[#8134AF]",
-    glow: "shadow-[#FFB47A]/40",
+    chip: "from-[#FE2C55] to-[#FF5757]",
+    glow: "shadow-[#FE2C55]/30",
   },
 ]
 
@@ -56,12 +55,12 @@ const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
 ]
 
 const FEATURE_HUES: Hue[] = [
-  { chip: "from-[#25F4EE] to-[#1877F2]", glow: "shadow-[#25F4EE]/40" },
-  { chip: "from-[#DCC9FF] to-[#A78BFA]", glow: "shadow-[#A78BFA]/40" },
-  { chip: "from-[#FE2C55] to-[#F58529]", glow: "shadow-[#FE2C55]/40" },
-  { chip: "from-[#BDF2DC] to-[#7FD8B0]", glow: "shadow-[#7FD8B0]/40" },
-  { chip: "from-[#C8E7FF] to-[#8FC4FF]", glow: "shadow-[#8FC4FF]/40" },
-  { chip: "from-[#1877F2] to-[#8134AF]", glow: "shadow-[#1877F2]/40" },
+  { chip: "from-[#00F2FE] to-[#25F4EE]", glow: "shadow-[#00F2FE]/30" },
+  { chip: "from-[#8B5CF6] to-[#D946EF]", glow: "shadow-[#8B5CF6]/30" },
+  { chip: "from-[#1877F2] to-[#6366F1]", glow: "shadow-[#1877F2]/30" },
+  { chip: "from-[#FE2C55] to-[#FF5757]", glow: "shadow-[#FE2C55]/30" },
+  { chip: "from-[#25F4EE] to-[#1877F2]", glow: "shadow-[#25F4EE]/30" },
+  { chip: "from-[#8B5CF6] to-[#FE2C55]", glow: "shadow-[#FE2C55]/30" },
 ]
 
 const FEATURES: { icon: LucideIcon; title: string; text: string }[] = [
@@ -311,27 +310,27 @@ export default function Home() {
                 <MiniStat
                   label="Videos tracked"
                   value="128"
-                  hue="from-[#25F4EE]/15 to-[#25F4EE]/5"
+                  hue="from-[#00F2FE]/20 to-[#00F2FE]/5"
                 />
                 <MiniStat
                   label="Published"
                   value="121"
-                  hue="from-teal-500/20 to-teal-500/5"
+                  hue="from-[#8B5CF6]/20 to-[#8B5CF6]/5"
                 />
                 <MiniStat
                   label="Replies sent"
                   value="342"
-                  hue="from-[#FE2C55]/15 to-[#FE2C55]/5"
+                  hue="from-[#FE2C55]/20 to-[#FE2C55]/5"
                 />
               </div>
               <div className="mt-4 flex flex-col gap-2">
                 <FakeRow
-                  dot="bg-emerald-400"
+                  dot="bg-[#8B5CF6]"
                   title="Video published to Reels + 2 Pages"
                   time="2m ago"
                 />
                 <FakeRow
-                  dot="bg-sky-400"
+                  dot="bg-[#00F2FE]"
                   title="New TikTok detected & downloaded"
                   time="21m ago"
                 />
@@ -492,16 +491,18 @@ export default function Home() {
               <div
                 aria-hidden
                 className="orb animate-aurora absolute -top-16 left-1/4 size-64"
-                style={{ background: "rgb(255 199 216 / 0.35)" }}
+                style={{ background: "rgb(0 242 254 / 0.25)" }}
               />
               <div
                 aria-hidden
                 className="orb animate-aurora-slow absolute -bottom-20 right-1/5 size-64"
-                style={{ background: "rgb(255 226 154 / 0.4)" }}
+                style={{ background: "rgb(254 44 85 / 0.25)" }}
               />
               <div className="relative">
-                <SparklesIcon className="mx-auto size-8 text-[#25F4EE]" />
-                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                <div className="mx-auto mb-4 flex justify-center">
+                  <ScaleHypeIcon size={48} variant="badge" />
+                </div>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
                   Ready to scale your reach?
                 </h2>
                 <p className="mt-3 text-muted-foreground">

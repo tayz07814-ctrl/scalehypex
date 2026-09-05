@@ -57,7 +57,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             className={cn(
               "flex size-7 items-center justify-center rounded-full transition-all",
               active
-                ? "bg-gradient-to-r from-[#25f4ee] to-[#fe2c55] text-white shadow-md shadow-pink-500/25"
+                ? "bg-gradient-to-r from-[#00f2fe] via-[#8b5cf6] to-[#fe2c55] text-white shadow-md shadow-[#fe2c55]/30"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >

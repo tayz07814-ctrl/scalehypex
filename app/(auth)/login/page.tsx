@@ -86,7 +86,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm">
         <div
           aria-hidden
-          className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-violet-600/30 via-fuchsia-600/30 to-orange-500/30 blur-2xl"
+          className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-[#00F2FE]/25 via-[#8B5CF6]/30 to-[#FE2C55]/30 blur-2xl"
         />
         <Card className="glass-card card-lift relative w-full rounded-2xl bg-transparent">
           <CardHeader className="items-center text-center">

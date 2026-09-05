@@ -172,14 +172,14 @@ export default async function DashboardPage() {
             value={videoCount ?? 0}
             hint="New TikToks detected so far"
             icon={VideoIcon}
-            hue="from-violet-500 to-indigo-500 shadow-violet-500/30"
+            hue="from-[#00F2FE] to-[#1877F2] shadow-[#00F2FE]/30"
           />
           <StatCard
             label="Published"
             value={publishedCount ?? 0}
             hint="Posts live on IG + FB"
             icon={RocketIcon}
-            hue="from-emerald-400 to-teal-500 shadow-emerald-500/30"
+            hue="from-[#8B5CF6] to-[#D946EF] shadow-[#8B5CF6]/30"
           />
           <StatCard
             label="Connected accounts"
@@ -190,7 +190,7 @@ export default async function DashboardPage() {
                 : "Connect TikTok and Meta to start"
             }
             icon={SparklesIcon}
-            hue="from-fuchsia-500 to-pink-500 shadow-fuchsia-500/30"
+            hue="from-[#FE2C55] to-[#FF5757] shadow-[#FE2C55]/30"
           />
         </div>
 
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
           <Card className="glass-card card-lift rounded-2xl bg-transparent">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-fuchsia-500 shadow-lg shadow-fuchsia-500/30">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#25F4EE] to-[#FE2C55] shadow-lg shadow-[#FE2C55]/30">
                   <Music2Icon className="size-4.5 text-white" />
                 </span>
                 <CardTitle>TikTok</CardTitle>
@@ -255,7 +255,7 @@ export default async function DashboardPage() {
           <Card className="glass-card card-lift rounded-2xl bg-transparent">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/30">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#1877F2] via-[#8B5CF6] to-[#D946EF] shadow-lg shadow-[#1877F2]/30">
                   <ClapperboardIcon className="size-4.5 text-white" />
                 </span>
                 <CardTitle>Meta (Instagram + Facebook)</CardTitle>

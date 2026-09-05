@@ -87,8 +87,8 @@ export function BotTerminal() {
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <span className="flex size-8 sm:size-9 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 shadow-md shadow-slate-900/30 dark:from-slate-700 dark:to-slate-900">
-              <TerminalIcon className="size-4 sm:size-4.5 text-emerald-400" />
+            <span className="flex size-8 sm:size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#0E1626] to-[#030509] border border-[#25F4EE]/40 shadow-md shadow-[#25F4EE]/20">
+              <TerminalIcon className="size-4 sm:size-4.5 text-[#25F4EE]" />
             </span>
             <CardTitle className="text-base sm:text-lg">Bot terminal</CardTitle>
           </div>
