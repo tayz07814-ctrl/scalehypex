@@ -1,0 +1,188 @@
+import React from "react"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
+
+export interface ScaleHypeIconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number | string
+  className?: string
+  variant?: "badge" | "mark"
+}
+
+/**
+ * ScaleHype bespoke vector icon:
+ * Interlocking dual kinetic power strokes forming an energetic 'S'
+ * with an integrated high-voltage automation core.
+ */
+export function ScaleHypeIcon({
+  size = 32,
+  className,
+  variant = "badge",
+  ...props
+}: ScaleHypeIconProps) {
+  const isBadge = variant === "badge"
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      width={size}
+      height={size}
+      fill="none"
+      className={cn("shrink-0 select-none overflow-visible", className)}
+      role="img"
+      aria-label="ScaleHype Icon"
+      {...props}
+    >
+      <defs>
+        {/* Obsidian Squircle Background */}
+        <linearGradient id="sh-react-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0E1626" />
+          <stop offset="50%" stopColor="#080D17" />
+          <stop offset="100%" stopColor="#030509" />
+        </linearGradient>
+
+        {/* Glowing Brand Rim Gradient */}
+        <linearGradient id="sh-react-border" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#25F4EE" stopOpacity="0.9" />
+          <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#FE2C55" stopOpacity="0.9" />
+        </linearGradient>
+
+        {/* Scale Arc Gradient (TikTok Cyan to Meta Blue) */}
+        <linearGradient id="sh-react-scale" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#00F2FE" />
+          <stop offset="35%" stopColor="#25F4EE" />
+          <stop offset="85%" stopColor="#1877F2" />
+          <stop offset="100%" stopColor="#6366F1" />
+        </linearGradient>
+
+        {/* Hype Arc Gradient (Violet to TikTok Crimson Red) */}
+        <linearGradient id="sh-react-hype" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8B5CF6" />
+          <stop offset="35%" stopColor="#D946EF" />
+          <stop offset="80%" stopColor="#FE2C55" />
+          <stop offset="100%" stopColor="#FF5757" />
+        </linearGradient>
+
+        <filter id="sh-react-blur" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="40" />
+        </filter>
+
+        <filter id="sh-react-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="10" stdDeviation="16" floodColor="#000000" floodOpacity="0.65" />
+        </filter>
+      </defs>
+
+      {isBadge && (
+        <>
+          {/* Squircle Base with Glow Rim */}
+          <rect width="512" height="512" rx="124" fill="url(#sh-react-bg)" />
+          <rect
+            width="508"
+            height="508"
+            x="2"
+            y="2"
+            rx="122"
+            fill="none"
+            stroke="url(#sh-react-border)"
+            strokeWidth="2.5"
+            opacity="0.8"
+          />
+
+          {/* Ambient Light Orbs */}
+          <circle cx="160" cy="350" r="120" fill="#25F4EE" opacity="0.15" filter="url(#sh-react-blur)" />
+          <circle cx="350" cy="160" r="120" fill="#FE2C55" opacity="0.16" filter="url(#sh-react-blur)" />
+        </>
+      )}
+
+      {/* ScaleHype Kinetic Glyphs */}
+      <g filter={isBadge ? "url(#sh-react-shadow)" : undefined}>
+        {/* Lower Arc: Scale Trajectory */}
+        <path
+          d="M 336 348
+             C 336 398, 296 434, 236 434
+             C 168 434, 118 398, 108 344
+             L 182 322
+             C 188 350, 210 368, 238 368
+             C 268 368, 282 354, 282 336
+             C 282 318, 268 306, 234 294
+             L 194 280
+             C 126 256, 92 218, 92 158
+             C 92 134, 104 112, 122 96
+             L 174 150
+             C 164 162, 158 174, 158 186
+             C 158 210, 176 226, 212 240
+             L 252 254
+             C 318 278, 350 310, 350 350
+             Z"
+          fill="url(#sh-react-scale)"
+        />
+
+        {/* Upper Arc: Hype Apex */}
+        <path
+          d="M 176 164
+             C 176 114, 216 78, 276 78
+             C 344 78, 394 114, 404 168
+             L 330 190
+             C 324 162, 302 144, 274 144
+             C 244 144, 230 158, 230 176
+             C 230 194, 244 206, 278 218
+             L 318 232
+             C 386 256, 420 294, 420 354
+             C 420 378, 408 400, 390 416
+             L 338 362
+             C 348 350, 354 338, 354 326
+             C 354 302, 336 286, 300 272
+             L 260 258
+             C 194 234, 162 202, 162 162
+             Z"
+          fill="url(#sh-react-hype)"
+        />
+
+        {/* Center Lightning Energy Bolt */}
+        <polygon
+          points="268,198 292,246 258,248 278,314 226,254 262,252"
+          fill="#FFFFFF"
+          opacity="0.98"
+        />
+      </g>
+    </svg>
+  )
+}
+
+export interface ScaleHypeLogoProps {
+  href?: string
+  className?: string
+  iconSize?: number
+  showText?: boolean
+}
+
+export function ScaleHypeLogo({
+  href = "/",
+  className,
+  iconSize = 30,
+  showText = true,
+}: ScaleHypeLogoProps) {
+  const content = (
+    <div className={cn("group inline-flex items-center gap-2.5 select-none", className)}>
+      <div className="relative transition-transform duration-300 ease-out group-hover:scale-105 group-hover:rotate-3">
+        <ScaleHypeIcon size={iconSize} variant="badge" />
+      </div>
+      {showText && (
+        <span className="text-base font-black tracking-tight text-foreground">
+          Scale<span className="text-gradient">Hypex</span>
+        </span>
+      )}
+    </div>
+  )
+
+  if (href) {
+    return (
+      <Link href={href} className="inline-flex items-center">
+        {content}
+      </Link>
+    )
+  }
+
+  return content
+}

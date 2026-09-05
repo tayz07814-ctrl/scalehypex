@@ -16,6 +16,7 @@ import {
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
+import { ScaleHypeIcon } from "@/components/scalehype-icon"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Reveal } from "@/components/reveal"
 
@@ -118,12 +119,12 @@ function MiniStat({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#F6E9DF] bg-gradient-to-b p-3 text-left",
+        "rounded-xl border border-border/70 bg-card/60 p-2.5 sm:p-3 text-left backdrop-blur-sm",
         hue
       )}
     >
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-      <p className="mt-0.5 text-xl font-bold text-[#4A3F3A]">{value}</p>
+      <p className="text-[10px] sm:text-[11px] text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-lg sm:text-xl font-bold text-foreground">{value}</p>
     </div>
   )
 }
@@ -138,12 +139,12 @@ function FakeRow({
   time: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-[#F6E9DF] bg-white/80 px-3 py-2.5">
+    <div className="flex items-center gap-2.5 sm:gap-3 rounded-lg border border-border/60 bg-card/75 px-2.5 sm:px-3 py-2 sm:py-2.5 backdrop-blur-sm">
       <span className={cn("size-2 shrink-0 rounded-full", dot)} />
       <span className="min-w-0 flex-1 truncate text-left text-xs text-foreground/90">
         {title}
       </span>
-      <span className="shrink-0 text-[11px] text-muted-foreground">{time}</span>
+      <span className="shrink-0 text-[10px] sm:text-[11px] text-muted-foreground">{time}</span>
     </div>
   )
 }
@@ -159,7 +160,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-      <span className="glass rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest text-[#D2597A] uppercase">
+      <span className="glass rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest text-primary uppercase">
         {eyebrow}
       </span>
       <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
@@ -171,15 +172,15 @@ function SectionHeading({
 function BrandPills() {
   return (
     <div className="mt-4 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-      <span className="rounded-full bg-[#BDF2DC]/40 px-3 py-1 text-xs font-semibold text-[#2E8B6E]">
+      <span className="rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-300">
         TikTok
       </span>
-      <span className="rounded-full bg-[#FFE7D9]/60 px-3 py-1 text-xs font-semibold">
+      <span className="rounded-full border border-pink-500/30 bg-pink-500/10 px-3 py-1 text-xs font-semibold">
         <span className="bg-gradient-to-r from-[#25F4EE] via-[#1877F2] to-[#FE2C55] bg-clip-text text-transparent">
           Instagram
         </span>
       </span>
-      <span className="rounded-full bg-[#C8E7FF]/40 px-3 py-1 text-xs font-semibold text-[#3B6EB4]">
+      <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300">
         Facebook
       </span>
     </div>
@@ -190,8 +191,8 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col">
       {/* Nav */}
-      <header className="sticky top-0 z-40">
-        <div className="glass mx-auto mt-3 flex w-full max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-5">
+      <header className="sticky top-0 z-40 px-3 sm:px-0">
+        <div className="glass mx-auto mt-3 flex w-full max-w-6xl items-center justify-between rounded-2xl px-3.5 py-2.5 sm:px-5">
           <Logo />
           <nav
             aria-label="Landing"
@@ -199,22 +200,22 @@ export default function Home() {
           >
             <a
               href="#how"
-              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-[#FFF1E0] hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               How it works
             </a>
             <a
               href="#features"
-              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-[#FFF1E0] hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               Features
             </a>
           </nav>
-          <div className="flex items-center gap-2">
-            <ThemeToggle className="hidden sm:inline-flex" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <ThemeToggle />
             <a
               href="/login"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "px-2.5 sm:px-3 text-xs sm:text-sm")}
             >
               Sign in
             </a>
@@ -222,7 +223,7 @@ export default function Home() {
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "btn-hero rounded-lg px-4"
+                "btn-hero rounded-lg px-3 sm:px-4 text-xs sm:text-sm"
               )}
             >
               Get started
@@ -232,10 +233,10 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 pt-16 pb-20 text-center sm:pt-24 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:pb-24 lg:text-left">
+      <section className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-4 pt-12 pb-16 text-center sm:gap-12 sm:px-6 sm:pt-20 sm:pb-24 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:text-left">
         <div className="flex flex-col items-center lg:items-start">
           <Reveal>
-            <span className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-medium text-[#5B4B48]">
+            <span className="glass inline-flex items-center gap-2.5 rounded-full px-3.5 py-1.5 text-xs font-medium text-foreground/90">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#FE2C55] opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-[#FE2C55]" />
@@ -246,7 +247,7 @@ export default function Home() {
           </Reveal>
 
           <Reveal delay={100}>
-            <h1 className="mt-8 max-w-3xl text-5xl leading-[1.05] font-black tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="mt-6 sm:mt-8 max-w-3xl text-4xl leading-[1.1] font-black tracking-tight sm:text-6xl lg:text-7xl">
               Post once.
               <br />
               <span className="text-gradient">Reach everywhere.</span>
@@ -295,17 +296,18 @@ export default function Home() {
 
         {/* App preview mockup */}
         <Reveal delay={250} className="w-full">
-          <div className="glass-card card-lift relative rounded-3xl p-3">
-            <div className="rounded-2xl border border-[#F6E9DF] bg-white p-5">
+          <div className="glass-card card-lift relative rounded-3xl p-2.5 sm:p-3">
+            <div className="rounded-2xl border border-border/70 bg-card/80 p-4 sm:p-5 backdrop-blur-md">
               <div className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full bg-[#FE2C55]/80" />
                 <span className="size-2.5 rounded-full bg-[#F58529]/80" />
-                <span className="size-2.5 rounded-full bg-[#BDF2DC]/80" />
-                <span className="ml-3 text-xs text-muted-foreground">
+                <span className="size-2.5 rounded-full bg-[#25F4EE]/80" />
+                <span className="ml-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <ScaleHypeIcon size={14} variant="badge" />
                   scalehypex — dashboard
                 </span>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
                 <MiniStat
                   label="Videos tracked"
                   value="128"
@@ -314,7 +316,7 @@ export default function Home() {
                 <MiniStat
                   label="Published"
                   value="121"
-                  hue="from-[#BDF2DC]/30 to-[#BDF2DC]/10"
+                  hue="from-teal-500/20 to-teal-500/5"
                 />
                 <MiniStat
                   label="Replies sent"
@@ -324,12 +326,12 @@ export default function Home() {
               </div>
               <div className="mt-4 flex flex-col gap-2">
                 <FakeRow
-                  dot="bg-[#7FD8B0]"
+                  dot="bg-emerald-400"
                   title="Video published to Reels + 2 Pages"
                   time="2m ago"
                 />
                 <FakeRow
-                  dot="bg-[#8FC4FF]"
+                  dot="bg-sky-400"
                   title="New TikTok detected & downloaded"
                   time="21m ago"
                 />
@@ -340,19 +342,19 @@ export default function Home() {
                 />
               </div>
             </div>
-            <div className="glass animate-float absolute -top-5 -right-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-[#25F4EE]/25">
-              <RocketIcon className="size-3.5 text-[#4FA97F]" />
+            <div className="glass animate-float absolute -top-4 right-1 sm:-top-5 sm:-right-3 flex items-center gap-2 rounded-xl px-3 py-1.5 sm:py-2 text-xs font-medium shadow-xl shadow-[#25F4EE]/25">
+              <RocketIcon className="size-3.5 text-emerald-600 dark:text-emerald-400" />
               Reel published
             </div>
-            <div className="glass animate-float-slow absolute -bottom-5 -left-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-[#8FC4FF]/30">
-              <MessageSquareTextIcon className="size-3.5 text-[#4E87D4]" />
+            <div className="glass animate-float-slow absolute -bottom-4 left-1 sm:-bottom-5 sm:-left-3 flex items-center gap-2 rounded-xl px-3 py-1.5 sm:py-2 text-xs font-medium shadow-xl shadow-sky-500/25">
+              <MessageSquareTextIcon className="size-3.5 text-sky-600 dark:text-sky-400" />
               Comment auto-replied
             </div>
             <div
-              className="glass animate-float absolute -top-5 -left-4 hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-[#DCC9FF]/40 sm:flex"
+              className="glass animate-float absolute -top-5 -left-4 hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium shadow-xl shadow-purple-500/25 sm:flex"
               style={{ animationDelay: "-3s" }}
             >
-              <DownloadIcon className="size-3.5 text-[#7A6FD0]" />
+              <DownloadIcon className="size-3.5 text-violet-600 dark:text-violet-400" />
               Watermark removed
             </div>
           </div>
@@ -393,7 +395,7 @@ export default function Home() {
           {STEPS.map((step, i) => (
             <Reveal key={step.title} delay={i * 120} className="h-full">
               <div className="glass-card card-lift relative h-full overflow-hidden rounded-2xl p-6">
-                <span className="absolute -top-5 -right-2 text-8xl font-black text-[#F3E8E1]">
+                <span className="absolute -top-5 -right-2 text-8xl font-black text-foreground/5 select-none">
                   {i + 1}
                 </span>
                 <div
@@ -460,7 +462,7 @@ export default function Home() {
       {/* Stats band */}
       <section className="mx-auto w-full max-w-6xl px-6 pt-24">
         <Reveal>
-          <div className="glass-card grid grid-cols-1 divide-y divide-[#F6E9DF] rounded-3xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="glass-card grid grid-cols-1 divide-y divide-border/60 rounded-3xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
               { value: "24/7", label: "Watching for new TikToks" },
               { value: "0", label: "Watermarks, ever" },

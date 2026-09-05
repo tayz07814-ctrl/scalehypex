@@ -113,12 +113,12 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
               return (
                 <li
                   key={`${item.created_at}-${i}`}
-                  className="flex items-center justify-between gap-4 rounded-lg px-1 py-2.5 transition-colors hover:bg-white/[0.04] first:pt-0"
+                  className="flex items-center justify-between gap-3 sm:gap-4 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/60 first:pt-0"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <ActivityIconFor action={item.action} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm">{title}</p>
+                      <p className="truncate text-sm font-medium">{title}</p>
                       {meta ? (
                         <p className="truncate text-xs text-muted-foreground">
                           {meta}
@@ -128,7 +128,7 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
                   </div>
                   <time
                     title={formatDateTime(item.created_at)}
-                    className="shrink-0 text-xs text-muted-foreground"
+                    className="shrink-0 text-[11px] sm:text-xs text-muted-foreground"
                   >
                     {timeAgo(item.created_at)}
                   </time>

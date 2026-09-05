@@ -17,6 +17,16 @@ export const metadata: Metadata = {
   },
   description:
     "Auto-detects your new TikToks, downloads them watermark-free, and publishes them to Instagram Reels and Facebook — with a comment auto-reply bot.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: ["/icon.svg"],
+  },
 };
 
 function AuroraBackground() {

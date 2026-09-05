@@ -30,12 +30,12 @@ type ReplyRow = {
 function PlatformBadge({ platform }: { platform: string }) {
   if (platform === "facebook") {
     return (
-      <Badge className="bg-blue-500/15 text-blue-300">Facebook</Badge>
+      <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-300">Facebook</Badge>
     )
   }
   if (platform === "instagram") {
     return (
-      <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20 text-fuchsia-300">
+      <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-pink-500/20 text-fuchsia-700 dark:text-fuchsia-300">
         Instagram
       </Badge>
     )

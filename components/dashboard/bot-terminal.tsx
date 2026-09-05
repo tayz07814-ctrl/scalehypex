@@ -85,23 +85,25 @@ export function BotTerminal() {
   return (
     <Card className="glass-card rounded-2xl bg-transparent">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#4A3F3A] to-[#6B584F] shadow-lg shadow-[#4A3F3A]/40">
-            <TerminalIcon className="size-4.5 text-emerald-400" />
-          </span>
-          <CardTitle>Bot terminal</CardTitle>
-          <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="btn-hero rounded-lg" onClick={runBot} disabled={running}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="flex size-8 sm:size-9 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-slate-950 shadow-md shadow-slate-900/30 dark:from-slate-700 dark:to-slate-900">
+              <TerminalIcon className="size-4 sm:size-4.5 text-emerald-400" />
+            </span>
+            <CardTitle className="text-base sm:text-lg">Bot terminal</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" className="btn-hero rounded-lg text-xs sm:text-sm" onClick={runBot} disabled={running}>
               {running ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
               {running ? "Running..." : "Run bot now"}
             </Button>
             <span
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                connected ? "bg-emerald-500/15 text-emerald-600" : "bg-[#F3E8E1] text-[#A79A92]"
+                connected ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"
               )}
             >
-              <span className={cn("size-1.5 rounded-full", connected ? "animate-pulse bg-emerald-500" : "bg-[#C0B4AA]")} />
+              <span className={cn("size-1.5 rounded-full", connected ? "animate-pulse bg-emerald-500" : "bg-muted-foreground")} />
               {connected ? "Live" : "Connecting..."}
             </span>
           </div>
@@ -110,7 +112,7 @@ export function BotTerminal() {
       <CardContent>
         <div
           ref={scrollRef}
-          className="h-[420px] overflow-y-auto rounded-xl border border-slate-800 bg-black p-4 font-mono text-[13px] leading-relaxed shadow-inner"
+          className="h-[320px] sm:h-[420px] overflow-y-auto rounded-xl border border-slate-800 bg-black p-3 sm:p-4 font-mono text-[12px] sm:text-[13px] leading-relaxed shadow-inner"
         >
           <div className="mb-1 flex items-center gap-2 text-slate-500">
             <span className="text-emerald-400">PS C:&gt;</span>

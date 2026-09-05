@@ -223,7 +223,7 @@ export default async function DashboardPage() {
                     <span className="font-medium">
                       {tiktokUsername ?? "TikTok account"}
                     </span>
-                    <Badge className="bg-emerald-500/15 text-emerald-600">
+                    <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
                       Connected
                     </Badge>
                   </div>
@@ -286,7 +286,7 @@ export default async function DashboardPage() {
                         <span className="font-medium">
                           {account.page_name ?? "Facebook Page"}
                         </span>
-                        <Badge className="bg-emerald-500/15 text-emerald-600">
+                        <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
                           Connected
                         </Badge>
                       </div>

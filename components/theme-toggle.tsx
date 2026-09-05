@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useTheme } from "next-themes"
-import { MonitorIcon, MoonIcon, SparklesIcon, SunIcon } from "lucide-react"
+import { MoonIcon, SparklesIcon, SunIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,11 +12,16 @@ const OPTIONS = [
   { key: "neo", label: "Neo", Icon: SparklesIcon },
 ] as const
 
+const emptySubscribe = () => () => {}
+
 /** 3-way theme switcher: Light / Dark / Neo (original indigo glass). */
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => setMounted(true), [])
+  const mounted = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
 
   if (!mounted) {
     return (

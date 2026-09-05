@@ -49,28 +49,28 @@ function PipelineBadge({
   switch (status) {
     case "new":
       return (
-        <Badge className="bg-[#F3E8E1] text-[#8C8078]">Listed</Badge>
+        <Badge variant="outline" className="bg-muted/60 text-muted-foreground">Listed</Badge>
       )
     case "downloading":
       return (
-        <Badge className="gap-1.5 bg-amber-500/15 text-amber-300">
-          <span className="size-1.5 animate-pulse rounded-full bg-amber-400" />
+        <Badge className="gap-1.5 bg-amber-500/15 text-amber-700 dark:text-amber-300">
+          <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
           Queued
         </Badge>
       )
     case "ready":
       return (
-        <Badge className="bg-sky-500/15 text-sky-300">Ready</Badge>
+        <Badge className="bg-sky-500/15 text-sky-700 dark:text-sky-300">Ready</Badge>
       )
     case "published":
       return (
-        <Badge className="bg-emerald-500/15 text-emerald-300">Published</Badge>
+        <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Published</Badge>
       )
     case "failed":
       return (
         <Badge
           variant="destructive"
-          className="bg-rose-500/15 text-rose-300"
+          className="bg-rose-500/15 text-rose-700 dark:text-rose-300"
           title={error ?? "Download failed"}
         >
           Failed
@@ -92,7 +92,7 @@ function PlatformCell({
   }
   if (post.status === "published") {
     return (
-      <Badge className="bg-emerald-500/15 text-emerald-300">Published</Badge>
+      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Published</Badge>
     )
   }
   if (post.status === "failed") {
@@ -100,7 +100,7 @@ function PlatformCell({
       <div className="flex flex-col items-start gap-1">
         <Badge
           variant="destructive"
-          className="bg-rose-500/15 text-rose-300"
+          className="bg-rose-500/15 text-rose-700 dark:text-rose-300"
         >
           Failed
         </Badge>
@@ -115,7 +115,7 @@ function PlatformCell({
       </div>
     )
   }
-  return <Badge className="bg-amber-500/15 text-amber-300">Pending</Badge>
+  return <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300">Pending</Badge>
 }
 
 function earliestPublishedAt(posts: PublishRow[]): string | null {

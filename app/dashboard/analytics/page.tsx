@@ -44,11 +44,11 @@ type MetricsRow = {
 
 function PlatformBadge({ platform }: { platform: string }) {
   if (platform === "facebook") {
-    return <Badge className="bg-blue-500/10 text-blue-600">Facebook</Badge>
+    return <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-300">Facebook</Badge>
   }
   if (platform === "instagram") {
     return (
-      <Badge className="bg-gradient-to-r from-fuchsia-500/15 to-pink-500/15 text-fuchsia-600">
+      <Badge className="bg-gradient-to-r from-fuchsia-500/15 to-pink-500/15 text-fuchsia-700 dark:text-fuchsia-300">
         Instagram
       </Badge>
     )
@@ -343,19 +343,19 @@ export default async function AnalyticsPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <MetricChip value={row.views} tint="bg-sky-500/10 text-sky-700" />
+                          <MetricChip value={row.views} tint="bg-sky-500/10 text-sky-700 dark:text-sky-300" />
                         </TableCell>
                         <TableCell className="text-right">
-                          <MetricChip value={row.likes} tint="bg-pink-500/10 text-pink-700" />
+                          <MetricChip value={row.likes} tint="bg-pink-500/10 text-pink-700 dark:text-pink-300" />
                         </TableCell>
                         <TableCell className="text-right">
-                          <MetricChip value={row.comments_count} tint="bg-amber-500/10 text-amber-700" />
+                          <MetricChip value={row.comments_count} tint="bg-amber-500/10 text-amber-700 dark:text-amber-300" />
                         </TableCell>
                         <TableCell className="text-right">
-                          <MetricChip value={row.saves} tint="bg-violet-500/10 text-violet-700" />
+                          <MetricChip value={row.saves} tint="bg-violet-500/10 text-violet-700 dark:text-violet-300" />
                         </TableCell>
                         <TableCell className="text-right">
-                          <MetricChip value={row.shares} tint="bg-emerald-500/10 text-emerald-700" />
+                          <MetricChip value={row.shares} tint="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" />
                         </TableCell>
                       </TableRow>
                     ))}
